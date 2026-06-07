@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@900&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- White rounded background -->
+  <rect width="64" height="64" rx="14" fill="#ffffff"/>
+
+  <!-- Top-Left bracket — sky blue (#5ab9ea), swapped colour on hover handled by CSS in-page -->
+  <path
+    d="M 8,37 L 8,15 Q 8,8 15,8 L 37,8"
+    fill="none"
+    stroke="#5ab9ea"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+
+  <!-- Bottom-Right bracket — navy (#0B2A4A) -->
+  <path
+    d="M 56,27 L 56,49 Q 56,56 49,56 L 27,56"
+    fill="none"
+    stroke="#0B2A4A"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+
+  <!-- Bold "L" — sky blue, rounded font matching wordmark -->
+  <text
+    x="14"
+    y="49"
+    font-family="'Arial Rounded MT Bold', 'Nunito', 'Arial Black', Arial, sans-serif"
+    font-weight="900"
+    font-size="36"
+    fill="#5ab9ea"
+  >L</text>
+</svg>

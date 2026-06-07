@@ -1,0 +1,21 @@
+import Link from 'next/link';
+import { LogoutButton } from '@/components/auth/LogoutButton';
+import { Logo } from '@/components/marketing/Logo';
+
+export function TechnicianShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <header className="border-b border-gray-200 bg-white px-4 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between">
+          <Logo />
+          <nav className="flex gap-2 text-sm font-bold">
+            <Link href="/technician/dashboard" className="rounded-xl px-4 py-2 text-gray-600 hover:bg-[#F0F9FC]">Dashboard</Link>
+            <Link href="/technician/jobs" className="rounded-xl px-4 py-2 text-gray-600 hover:bg-[#F0F9FC]">Jobs</Link>
+            <LogoutButton />
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+    </div>
+  );
+}

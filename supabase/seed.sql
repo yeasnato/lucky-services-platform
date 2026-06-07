@@ -1,0 +1,60 @@
+insert into public.service_categories (id, title, slug, sort_order) values
+  ('ac', 'AC Service', 'ac-repair-service-dhaka', 1),
+  ('fridge', 'Refrigerator', 'refrigerator-repair-dhaka', 2),
+  ('washing', 'Washing Machine', 'washing-machine-repair-dhaka', 3),
+  ('microwave', 'Microwave Oven', 'microwave-oven-repair-dhaka', 4),
+  ('geyser', 'Geyser', 'geyser-repair-dhaka', 5),
+  ('hood', 'Kitchen Hood', 'kitchen-hood-repair-dhaka', 6)
+on conflict (id) do nothing;
+
+insert into public.service_areas (name, slug) values
+  ('Mirpur', 'mirpur'),
+  ('Uttara', 'uttara'),
+  ('Dhanmondi', 'dhanmondi'),
+  ('Gulshan', 'gulshan'),
+  ('Banani', 'banani'),
+  ('Mohakhali', 'mohakhali'),
+  ('Tejgaon', 'tejgaon')
+on conflict (slug) do nothing;
+
+insert into public.services (id, category_id, slug, title, description, base_price, service_type, is_popular) values
+  ('ac-checkup', 'ac', 'ac-basic-servicing', 'AC Basic Servicing (1-1.5 Ton)', 'Basic cleaning and health checkup.', 399, 'service', false),
+  ('ac-jet', 'ac', 'ac-jet-wash', 'AC Jet Wash (1-1.5 Ton)', 'Deep cleaning with high pressure jet.', 950, 'service', true),
+  ('ac-master', 'ac', 'ac-master-wash', 'AC Master Wash (1-1.5 Ton)', 'Complete dismantling and cleaning of indoor/outdoor units.', 1600, 'service', false),
+  ('ac-water', 'ac', 'ac-water-drop-solution', 'Water Drop Solution (1-1.5 Ton)', 'Fixing water leakage from indoor unit.', 900, 'repair', false),
+  ('ac-hanging', 'ac', 'ac-hanging-charge', 'Hanging Charge', 'Up to 8th floor.', 300, 'service', false),
+  ('ac-shifting', 'ac', 'ac-shifting', 'AC Shifting (1-1.5 Ton)', 'Professional shifting: dismantle and installation.', 4000, 'service', false),
+  ('ac-install', 'ac', 'ac-installation', 'AC Installation (1-1.5 Ton)', 'Installation of Split AC unit.', 2200, 'service', false),
+  ('ac-uninstall', 'ac', 'ac-uninstallation', 'AC Uninstallation (1-1.5 Ton)', 'Safe removal of AC unit.', 1800, 'service', false),
+  ('ac-nitrogen', 'ac', 'ac-nitrogen-wash', 'Nitrogen Wash (1-1.5 Ton)', 'Condenser coil cleaning with nitrogen.', 1200, 'service', false),
+  ('ac-leak', 'ac', 'ac-leak-repair', 'Leak Repair (1-1.5 Ton)', 'Welding and fixing leakage in pipes.', 1900, 'repair', false),
+  ('ac-circuit', 'ac', 'ac-circuit-repair', 'Circuit Repair (1-1.5 Ton)', 'PCB board repair. Final price may vary by fault.', 3500, 'repair', false),
+  ('ac-cap', 'ac', 'ac-capacitor-replacement', 'Capacitor Replacement (1-1.5 Ton)', 'Replacing faulty capacitor.', 750, 'repair', false),
+  ('ac-r410-half', 'ac', 'ac-r410-gas-half', 'R410 Gas Half (1-1.5 Ton)', 'Top-up R410 refrigerant.', 1700, 'repair', false),
+  ('fridge-checkup', 'fridge', 'fridge-checkup', 'Fridge Checkup', 'Diagnosis of refrigerator problems.', 350, 'service', false),
+  ('fridge-gas', 'fridge', 'fridge-gas-charge', 'Gas Charge', 'Refrigerant refill. Final price depends on model and issue.', 1800, 'repair', false),
+  ('ac-gas-r410', 'ac', 'ac-r410-gas-refill', 'R410 Gas Full (1-1.5 Ton)', 'Full charge R410 refrigerant.', 3500, 'repair', false),
+  ('ac-r22-half', 'ac', 'ac-r22-gas-half', 'R22 Gas Half (1-1.5 Ton)', 'Top-up R22 refrigerant.', 2400, 'repair', false),
+  ('ac-r22-full', 'ac', 'ac-r22-gas-full', 'R22 Gas Full (1-1.5 Ton)', 'Full charge R22 refrigerant.', 5000, 'repair', false),
+  ('ac-r32-half', 'ac', 'ac-r32-gas-half', 'R32 Gas Half (1-1.5 Ton)', 'Top-up R32 refrigerant.', 1800, 'repair', false),
+  ('ac-r32-full', 'ac', 'ac-r32-gas-full', 'R32 Gas Full (1-1.5 Ton)', 'Full charge R32 refrigerant.', 3200, 'repair', false),
+  ('fridge-master', 'fridge', 'fridge-master-servicing', 'Master Servicing', 'Deep cleaning and maintenance.', 1500, 'service', false),
+  ('fridge-water', 'fridge', 'fridge-water-lining', 'Water Lining', 'Clearing blocked water drain lines.', 1100, 'repair', false),
+  ('fridge-thermostat', 'fridge', 'fridge-thermostat-change', 'Thermostat Change', 'Replacing faulty thermostat.', 1700, 'repair', false),
+  ('fridge-gasket', 'fridge', 'fridge-gasket-change', 'Gasket Change', 'Door rubber replacement. Final price may vary by model.', 3500, 'repair', false),
+  ('fridge-circuit', 'fridge', 'fridge-circuit-repair', 'Circuit Repair', 'PCB/kit repair. Final price may vary by fault.', 4000, 'repair', false),
+  ('wm-checkup', 'washing', 'washing-machine-checkup', 'Washing Machine Checkup', 'Diagnosis of washing machine issues.', 450, 'service', false),
+  ('wm-service', 'washing', 'washing-machine-servicing', 'Washing Machine Servicing', 'Complete cleaning and servicing.', 1200, 'service', false),
+  ('mw-checkup', 'microwave', 'microwave-checkup', 'Microwave Checkup', 'Diagnosis of microwave problems.', 350, 'service', false),
+  ('mw-service', 'microwave', 'microwave-servicing', 'Microwave Servicing', 'General cleaning and servicing.', 500, 'service', false),
+  ('mw-circuit', 'microwave', 'microwave-circuit-repair', 'Circuit Repair', 'Main board repair.', 3000, 'repair', false),
+  ('mw-magnetron', 'microwave', 'microwave-magnetron-replacement', 'Magnetron Replace', 'Replacing the heating element.', 7000, 'repair', false),
+  ('hood-checkup', 'hood', 'kitchen-hood-checkup', 'Kitchen Hood Checkup', 'Diagnosis of kitchen hood issues.', 350, 'service', false),
+  ('hood-service', 'hood', 'kitchen-hood-servicing', 'Kitchen Hood Servicing', 'General cleaning.', 1000, 'service', false),
+  ('geyser-install', 'geyser', 'geyser-installation', 'Geyser Installation', 'Wall mounting and connection.', 950, 'service', false),
+  ('hood-master', 'hood', 'kitchen-hood-master-servicing', 'Master Servicing', 'Deep cleaning of filters and motor.', 1500, 'service', false),
+  ('geyser-checkup', 'geyser', 'geyser-checkup', 'Geyser Checkup', 'Diagnosis of water heater.', 350, 'service', false),
+  ('geyser-master', 'geyser', 'geyser-master-servicing', 'Master Servicing', 'Descaling and cleaning.', 1300, 'service', false),
+  ('geyser-uninstall', 'geyser', 'geyser-uninstallation', 'Geyser Uninstallation', 'Safe removal.', 650, 'service', false),
+  ('geyser-shifting', 'geyser', 'geyser-shifting', 'Geyser Shifting', 'Remove and install at new location.', 1500, 'service', false)
+on conflict (id) do nothing;
