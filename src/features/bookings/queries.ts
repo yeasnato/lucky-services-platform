@@ -201,13 +201,44 @@ export async function getAdminTechnicianJobs(technicianId: string, limit = 50) {
 }
 
 export async function getDashboardStats() {
-  const bookings = await getAdminBookings();
+  if (!hasSupabaseConfig()) {
+    const bookings = await getAdminBookings();
+
+    return {
+      pending: bookings.filter((booking) => booking.status === 'pending').length,
+      confirmed: bookings.filter((booking) => booking.status === 'confirmed').length,
+      readyToAssign: bookings.filter((booking) => booking.status === 'confirmed' && !booking.assigned_technician_id).length,
+      assigned: bookings.filter((booking) => booking.status === 'assigned').length,
+      fieldActive: bookings.filter((booking) => activeTechnicianStatuses.includes(booking.status)).length,
+      completed: bookings.filter((booking) => booking.status === 'completed').length,
+      cancelled: bookings.filter((booking) => booking.status === 'cancelled').length,
+      total: bookings.length
+    };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const [total, pending, confirmed, readyToAssign, assigned, accepted, onTheWay, inProgress, completed, cancelled] = await Promise.all([
+    countBookings(supabase),
+    countBookings(supabase, 'pending'),
+    countBookings(supabase, 'confirmed'),
+    countBookings(supabase, 'confirmed', true),
+    countBookings(supabase, 'assigned'),
+    countBookings(supabase, 'accepted'),
+    countBookings(supabase, 'on_the_way'),
+    countBookings(supabase, 'in_progress'),
+    countBookings(supabase, 'completed'),
+    countBookings(supabase, 'cancelled')
+  ]);
 
   return {
-    pending: bookings.filter((booking) => booking.status === 'pending').length,
-    assigned: bookings.filter((booking) => booking.status === 'assigned').length,
-    completed: bookings.filter((booking) => booking.status === 'completed').length,
-    total: bookings.length
+    pending,
+    confirmed,
+    readyToAssign,
+    assigned,
+    fieldActive: assigned + accepted + onTheWay + inProgress,
+    completed,
+    cancelled,
+    total
   };
 }
 
@@ -298,4 +329,19 @@ async function hydrateBookings(bookings: BookingRow[]) {
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function countBookings(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  status?: string,
+  unassigned = false
+) {
+  let query = supabase.from('bookings').select('id', { count: 'exact', head: true });
+
+  if (status) query = query.eq('status', status);
+  if (unassigned) query = query.is('assigned_technician_id', null);
+
+  const { count, error } = await query;
+  if (error) throw error;
+  return count || 0;
 }

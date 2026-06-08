@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { BadgeDollarSign, Calendar, CalendarClock, CheckCircle2, Clock, FileText, Info as InfoIcon, MapPin, MessageSquareText, Phone, Save, Trash2, User, UserRoundCheck, XCircle } from 'lucide-react';
+import { BadgeDollarSign, Calendar, CalendarClock, CheckCircle2, Clock, FileText, Info as InfoIcon, MapPin, MessageCircle, MessageSquareText, Navigation, Phone, Save, Trash2, User, UserRoundCheck, XCircle } from 'lucide-react';
+import { getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
 import { BookingTimeline } from '@/components/admin/BookingTimeline';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { SubmitButton } from '@/components/admin/SubmitButton';
@@ -44,7 +45,7 @@ export default async function BookingDetailPage({
     getServicesForSelect().catch(() => []),
     getAdminBookings().catch(() => [])
   ]);
-  const activeCounts = getActiveCounts(allBookings);
+  const activeCounts = getActiveBookingCounts(allBookings);
   const allowedActions = getAllowedStatusTransitions(booking.status, 'admin');
   const canConfirm = allowedActions.includes('confirmed');
   const canAssign = allowedActions.includes('assigned');
@@ -80,10 +81,10 @@ export default async function BookingDetailPage({
               <Info
                 label="Phone"
                 value={
-                  <Link href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 text-[#0B2A4A] hover:text-[#2EA9D6]">
+                  <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 text-[#0B2A4A] hover:text-[#2EA9D6]">
                     <Phone className="size-4" aria-hidden="true" />
                     {booking.customer_phone}
-                  </Link>
+                  </a>
                 }
               />
               <Info label="Service" value={booking.services?.title || booking.service_id || 'General Inquiry'} />
@@ -119,6 +120,20 @@ export default async function BookingDetailPage({
             </div>
 
             <div className="border-t border-slate-100 p-6">
+              <div className="mb-4 grid gap-3 sm:grid-cols-3">
+                <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]">
+                  <Phone className="size-4" aria-hidden="true" />
+                  Call
+                </a>
+                <a href={customerWhatsAppUrl(booking.customer_phone, booking.order_id)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100">
+                  <MessageCircle className="size-4" aria-hidden="true" />
+                  WhatsApp
+                </a>
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]">
+                  <Navigation className="size-4" aria-hidden="true" />
+                  Map
+                </a>
+              </div>
               <div className="rounded-lg bg-slate-50 p-4">
                 <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
                   <MessageSquareText className="size-4" aria-hidden="true" />
@@ -220,10 +235,10 @@ export default async function BookingDetailPage({
             <form action={assignTechnician} className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <input type="hidden" name="bookingId" value={booking.id} />
               <label className="text-xs font-bold uppercase tracking-widest text-slate-400" htmlFor="technicianId">
-                Assign technician
+                {booking.assigned_technician_id ? 'Reassign technician' : 'Assign technician'}
               </label>
-              <select id="technicianId" name="technicianId" required className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
-                <option value="">Select technician</option>
+              <select id="technicianId" name="technicianId" required defaultValue={booking.assigned_technician_id || ''} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
+                <option value="">{booking.assigned_technician_id ? 'Select new technician' : 'Select technician'}</option>
                 {technicians.map((technician) => (
                   <option key={technician.id} value={technician.id}>
                     {technician.display_name} - {technician.availability_status.replaceAll('_', ' ')} - {activeCounts.get(technician.id) || 0} active
@@ -231,11 +246,11 @@ export default async function BookingDetailPage({
                 ))}
               </select>
               <SubmitButton
-                pendingLabel="Assigning..."
+                pendingLabel={booking.assigned_technician_id ? 'Reassigning...' : 'Assigning...'}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#123B64]"
               >
                 <UserRoundCheck className="size-4" aria-hidden="true" />
-                Assign technician
+                {booking.assigned_technician_id ? 'Reassign technician' : 'Assign technician'}
               </SubmitButton>
             </form>
           ) : null}
@@ -311,12 +326,14 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
 }
 
-function getActiveCounts(bookings: { status: string; assigned_technician_id: string | null }[]) {
-  const counts = new Map<string, number>();
-  bookings
-    .filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status) && booking.assigned_technician_id)
-    .forEach((booking) => {
-      counts.set(booking.assigned_technician_id!, (counts.get(booking.assigned_technician_id!) || 0) + 1);
-    });
-  return counts;
+function customerWhatsAppUrl(phone: string, orderId: string) {
+  const normalized = normalizeBdPhone(phone);
+  return `https://wa.me/${normalized}?text=${encodeURIComponent(`Assalamu alaikum, Lucky Services Centre here about your booking ${orderId}.`)}`;
+}
+
+function normalizeBdPhone(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('880')) return digits;
+  if (digits.startsWith('0')) return `88${digits}`;
+  return digits;
 }

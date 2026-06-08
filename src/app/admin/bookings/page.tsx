@@ -1,13 +1,11 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Filter, MapPin, Phone, Plus, Search, UserRoundCheck } from 'lucide-react';
+import { ArrowRight, Filter, MapPin, Phone, Plus, Search } from 'lucide-react';
+import { BookingQuickAction, getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { SubmitButton } from '@/components/admin/SubmitButton';
-import { assignTechnician, updateBookingStatus } from '@/features/bookings/actions';
 import { getAdminBookings } from '@/features/bookings/queries';
 import type { BookingRow } from '@/features/bookings/queries';
 import { getTechnicians } from '@/features/technicians/queries';
-import type { TechnicianRow } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
 
 type QueueSearchParams = {
@@ -15,6 +13,7 @@ type QueueSearchParams = {
   status?: string;
   unassigned?: string;
   q?: string;
+  action?: string;
 };
 
 const fieldStatuses = ['assigned', 'accepted', 'on_the_way', 'in_progress'];
@@ -35,9 +34,11 @@ export default async function AdminBookingsPage({
     pending: bookings.filter((booking) => booking.status === 'pending').length,
     ready: bookings.filter((booking) => booking.status === 'confirmed' && !booking.assigned_technician_id).length,
     field: bookings.filter((booking) => fieldStatuses.includes(booking.status)).length,
-    completed: bookings.filter((booking) => booking.status === 'completed').length
+    completed: bookings.filter((booking) => booking.status === 'completed').length,
+    cancelled: bookings.filter((booking) => booking.status === 'cancelled').length
   };
-  const activeCounts = getActiveCounts(bookings);
+  const activeCounts = getActiveBookingCounts(bookings);
+  const successHref = queueHref(activeFilter, query, resolvedSearchParams.unassigned === '1', 'updated');
 
   return (
     <AdminShell
@@ -56,6 +57,11 @@ export default async function AdminBookingsPage({
       {resolvedSearchParams.deleted === '1' ? (
         <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-extrabold text-emerald-800">
           Order deleted successfully.
+        </div>
+      ) : null}
+      {resolvedSearchParams.action === 'updated' ? (
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-extrabold text-emerald-800">
+          Booking updated successfully.
         </div>
       ) : null}
 
@@ -96,6 +102,7 @@ export default async function AdminBookingsPage({
             />
             <QueueTab label="In field" count={tabCounts.field} href={queueHref('field', query)} active={activeFilter === 'field'} />
             <QueueTab label="Completed" count={tabCounts.completed} href={queueHref('completed', query)} active={activeFilter === 'completed'} />
+            <QueueTab label="Cancelled" count={tabCounts.cancelled} href={queueHref('cancelled', query)} active={activeFilter === 'cancelled'} />
           </div>
         </div>
 
@@ -135,7 +142,7 @@ export default async function AdminBookingsPage({
                     <StatusBadge status={booking.status} />
                   </td>
                   <td className="px-5 py-4">
-                    <QuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} />
+                    <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref={successHref} />
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link href={`/admin/bookings/${booking.order_id}`} className="font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
@@ -172,7 +179,7 @@ export default async function AdminBookingsPage({
                 </p>
               </div>
               <div className="mt-4 grid gap-3">
-                <QuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} />
+                <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref={successHref} />
                 <Link href={`/admin/bookings/${booking.order_id}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A]">
                   Manage order
                   <ArrowRight className="size-4" aria-hidden="true" />
@@ -191,74 +198,6 @@ export default async function AdminBookingsPage({
       </section>
     </AdminShell>
   );
-}
-
-function QuickAction({
-  booking,
-  technicians,
-  activeCounts
-}: {
-  booking: BookingRow;
-  technicians: TechnicianRow[];
-  activeCounts: Map<string, number>;
-}) {
-  if (booking.status === 'pending') {
-    return (
-      <form
-        action={async () => {
-          'use server';
-          await updateBookingStatus(booking.id, 'confirmed');
-        }}
-      >
-        <SubmitButton
-          pendingLabel="Confirming..."
-          className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#238FBA] md:w-auto"
-        >
-          <CheckCircle2 className="size-4" aria-hidden="true" />
-          Confirm
-        </SubmitButton>
-      </form>
-    );
-  }
-
-  if (booking.status === 'confirmed' && !booking.assigned_technician_id) {
-    return (
-      <form action={assignTechnician} className="flex min-w-[240px] flex-col gap-2 lg:flex-row">
-        <input type="hidden" name="bookingId" value={booking.id} />
-        <select
-          name="technicianId"
-          required
-          className="min-h-[42px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]"
-        >
-          <option value="">Assign technician</option>
-          {technicians.map((technician) => (
-            <option key={technician.id} value={technician.id}>
-              {technician.display_name} - {technician.availability_status.replaceAll('_', ' ')} - {activeCounts.get(technician.id) || 0} active
-            </option>
-          ))}
-        </select>
-        <SubmitButton
-          pendingLabel="Assigning..."
-          className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#123B64]"
-        >
-          <UserRoundCheck className="size-4" aria-hidden="true" />
-          Assign
-        </SubmitButton>
-      </form>
-    );
-  }
-
-  return <span className="text-sm font-semibold text-slate-400">Open details</span>;
-}
-
-function getActiveCounts(bookings: BookingRow[]) {
-  const counts = new Map<string, number>();
-  bookings
-    .filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status) && booking.assigned_technician_id)
-    .forEach((booking) => {
-      counts.set(booking.assigned_technician_id!, (counts.get(booking.assigned_technician_id!) || 0) + 1);
-    });
-  return counts;
 }
 
 function QueueTab({ label, count, href, active }: { label: string; count: number; href: string; active: boolean }) {
@@ -303,11 +242,12 @@ function filterBookings(bookings: BookingRow[], params: QueueSearchParams) {
   });
 }
 
-function queueHref(status: string, query: string, unassigned = false) {
+function queueHref(status: string, query: string, unassigned = false, action?: string) {
   const params = new URLSearchParams();
   params.set('status', status);
   if (unassigned) params.set('unassigned', '1');
   if (query) params.set('q', query);
+  if (action) params.set('action', action);
   return `/admin/bookings?${params.toString()}`;
 }
 

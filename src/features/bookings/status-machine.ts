@@ -4,9 +4,9 @@ const adminTransitions: Record<BookingStatus, BookingStatus[]> = {
   pending: ['confirmed', 'cancelled'],
   confirmed: ['assigned', 'cancelled'],
   assigned: ['assigned', 'cancelled'],
-  accepted: ['cancelled'],
-  on_the_way: ['completed', 'cancelled'],
-  in_progress: ['completed', 'cancelled'],
+  accepted: ['assigned', 'cancelled'],
+  on_the_way: ['assigned', 'completed', 'cancelled'],
+  in_progress: ['assigned', 'completed', 'cancelled'],
   completed: [],
   cancelled: []
 };
