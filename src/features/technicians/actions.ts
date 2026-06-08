@@ -1,6 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { requireRole } from '@/lib/auth/session';
 import { createServiceClient } from '@/lib/supabase/server';
 
@@ -13,10 +14,16 @@ export async function createTechnician(formData: FormData) {
   const password = String(formData.get('password') || '');
 
   if (!fullName || !email || !phone || password.length < 8) {
-    throw new Error('Name, email, phone, and a minimum 8-character password are required.');
+    redirectWithError('Name, email, phone, and a minimum 8-character password are required.');
   }
 
-  const supabase = createServiceClient();
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    redirectWithError('Supabase service role key is missing in Vercel. Add SUPABASE_SERVICE_ROLE_KEY to Vercel Environment Variables.');
+  }
+
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
@@ -27,7 +34,14 @@ export async function createTechnician(formData: FormData) {
     }
   });
 
-  if (error) throw error;
+  if (error) {
+    redirectWithError(error.message);
+  }
+
+  if (!data.user) {
+    redirectWithError('Technician auth account could not be created.');
+  }
+
   const userId = data.user.id;
 
   const { error: profileError } = await supabase.from('profiles').upsert({
@@ -38,7 +52,9 @@ export async function createTechnician(formData: FormData) {
     status: 'active'
   });
 
-  if (profileError) throw profileError;
+  if (profileError) {
+    redirectWithError(profileError.message);
+  }
 
   const { error: technicianError } = await supabase.from('technician_profiles').upsert({
     id: userId,
@@ -47,7 +63,14 @@ export async function createTechnician(formData: FormData) {
     availability_status: 'available'
   });
 
-  if (technicianError) throw technicianError;
+  if (technicianError) {
+    redirectWithError(technicianError.message);
+  }
 
   revalidatePath('/admin/technicians');
+  redirect('/admin/technicians?created=1');
+}
+
+function redirectWithError(message: string): never {
+  redirect(`/admin/technicians?error=${encodeURIComponent(message)}`);
 }

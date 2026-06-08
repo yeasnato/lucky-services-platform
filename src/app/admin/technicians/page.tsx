@@ -1,18 +1,36 @@
 import { Plus, ShieldCheck, Star, UserRound } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
+import { SubmitButton } from '@/components/admin/SubmitButton';
 import { createTechnician } from '@/features/technicians/actions';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
 
-export default async function AdminTechniciansPage() {
+export default async function AdminTechniciansPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ created?: string; error?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
-  const technicians = await getTechnicians();
+  const technicians = await getTechnicians().catch(() => []);
 
   return (
     <AdminShell
       title="Technician team"
       description="Create technician logins, review availability, and prepare the field team for assigned bookings."
     >
+      {resolvedSearchParams.created === '1' ? (
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-extrabold text-emerald-800">
+          Technician login created successfully. Give the email and temporary password to the technician.
+        </div>
+      ) : null}
+
+      {resolvedSearchParams.error ? (
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm font-extrabold text-rose-800">
+          Technician could not be created: {resolvedSearchParams.error}
+        </div>
+      ) : null}
+
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
           <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
@@ -67,10 +85,13 @@ export default async function AdminTechniciansPage() {
             <input name="email" required type="email" placeholder="Email" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
             <input name="phone" required placeholder="Phone" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
             <input name="password" required type="password" minLength={8} placeholder="Temporary password" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
-            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]">
+            <SubmitButton
+              pendingLabel="Creating technician..."
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+            >
               <Plus className="size-4" aria-hidden="true" />
               Create technician
-            </button>
+            </SubmitButton>
           </form>
         </aside>
       </div>

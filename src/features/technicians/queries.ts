@@ -1,5 +1,5 @@
 import { hasSupabaseConfig } from '@/lib/supabase/config';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase/server';
 
 export interface TechnicianRow {
   id: string;
@@ -18,12 +18,21 @@ const mockTechnicians: TechnicianRow[] = [
 export async function getTechnicians() {
   if (!hasSupabaseConfig()) return mockTechnicians;
 
-  const supabase = await createServerSupabaseClient();
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    supabase = await createServerSupabaseClient();
+  }
+
   const { data, error } = await supabase
     .from('technician_profiles')
     .select('*')
     .order('display_name', { ascending: true });
 
-  if (error) throw error;
+  if (error) {
+    return [];
+  }
+
   return (data || []) as TechnicianRow[];
 }
