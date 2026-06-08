@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -13,8 +13,14 @@ export function LoginForm({
 } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const storageKey = useMemo(() => `lucky:${allowedRole || 'staff'}:last-email`, [allowedRole]);
+  const [emailValue, setEmailValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setEmailValue(window.localStorage.getItem(storageKey) || '');
+  }, [storageKey]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,16 +40,27 @@ export function LoginForm({
       return;
     }
 
-    const { data: profile, error: profileError } = await supabase.from('profiles').select('role, status').single();
+    window.localStorage.setItem(storageKey, email);
 
-    if (profileError || !profile || profile.status !== 'active') {
+    const profileResponse = await fetch('/api/auth/profile', {
+      cache: 'no-store'
+    });
+    const profilePayload = (await profileResponse.json().catch(() => ({}))) as {
+      profile?: {
+        role: 'admin' | 'technician' | 'customer';
+        status: string;
+      };
+      error?: string;
+    };
+
+    if (!profileResponse.ok || !profilePayload.profile) {
       await supabase.auth.signOut();
-      setError('Your staff profile is not active. Please contact admin.');
+      setError(profilePayload.error || 'Staff profile could not be resolved.');
       setLoading(false);
       return;
     }
 
-    if (allowedRole && profile.role !== allowedRole) {
+    if (allowedRole && profilePayload.profile.role !== allowedRole) {
       await supabase.auth.signOut();
       setError(allowedRole === 'admin' ? 'Please use an admin account.' : 'Please use a technician account.');
       setLoading(false);
@@ -57,7 +74,7 @@ export function LoginForm({
         : allowedRole === 'technician'
           ? requestedNext?.startsWith('/technician') ? requestedNext : null
           : requestedNext;
-    const roleFallbackPath = fallbackPath || (profile.role === 'technician' ? '/technician/dashboard' : '/admin/dashboard');
+    const roleFallbackPath = fallbackPath || (profilePayload.profile.role === 'technician' ? '/technician/dashboard' : '/admin/dashboard');
 
     router.push(next || roleFallbackPath);
     router.refresh();
@@ -71,6 +88,8 @@ export function LoginForm({
           required
           name="email"
           type="email"
+          value={emailValue}
+          onChange={(event) => setEmailValue(event.target.value)}
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:ring-2 focus:ring-[#2EA9D6]/20"
           placeholder="admin@example.com"
         />
@@ -90,7 +109,7 @@ export function LoginForm({
         disabled={loading}
         className="w-full rounded-xl bg-[#2EA9D6] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#2EA9D6]/20 disabled:opacity-70"
       >
-        {loading ? 'Signing in...' : 'Sign In'}
+        {loading ? 'Signing in...' : emailValue ? 'Sign in with saved email' : 'Sign In'}
       </button>
     </form>
   );

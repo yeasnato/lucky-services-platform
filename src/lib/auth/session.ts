@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import type { UserRole } from '@/types/core';
 import { hasSupabaseConfig } from '@/lib/supabase/config';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase/server';
 
 export async function getCurrentProfile() {
   if (!hasSupabaseConfig()) {
@@ -25,7 +25,17 @@ export async function getCurrentProfile() {
 
   if (!user) return null;
 
-  const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  let data = null;
+
+  try {
+    const serviceClient = createServiceClient();
+    const { data: serviceProfile } = await serviceClient.from('profiles').select('*').eq('id', user.id).single();
+    data = serviceProfile;
+  } catch {
+    const { data: rlsProfile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+    data = rlsProfile;
+  }
+
   return data;
 }
 
@@ -33,7 +43,11 @@ export async function requireRole(roles: UserRole[]) {
   const profile = await getCurrentProfile();
 
   if (!profile) {
-    redirect('/login');
+    redirect(roles.includes('technician') && !roles.includes('admin') ? '/technician/login' : '/admin/login');
+  }
+
+  if (profile.status !== 'active') {
+    redirect(roles.includes('technician') && !roles.includes('admin') ? '/technician/login' : '/admin/login');
   }
 
   if (!roles.includes(profile.role as UserRole)) {
@@ -44,6 +58,8 @@ export async function requireRole(roles: UserRole[]) {
       };
     }
 
+    if (profile.role === 'technician') redirect('/technician/dashboard');
+    if (profile.role === 'admin') redirect('/admin/dashboard');
     redirect('/');
   }
 
