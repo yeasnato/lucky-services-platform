@@ -14,11 +14,15 @@ export async function updateBookingStatus(bookingId: string, status: string) {
 
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
-    .select('status, order_id')
+    .select('status, order_id, assigned_technician_id')
     .eq('id', bookingId)
     .single();
 
   if (bookingError) throw bookingError;
+  if (profile.role === 'technician' && booking.assigned_technician_id !== profile.id) {
+    throw new Error('This job is not assigned to your technician profile.');
+  }
+
   assertCanTransition(booking.status, status, profile.role);
 
   const { error } = await supabase
@@ -46,6 +50,7 @@ export async function updateBookingStatus(bookingId: string, status: string) {
   revalidatePath(`/admin/bookings/${booking.order_id}`);
   revalidatePath('/admin/dashboard');
   revalidatePath('/technician/dashboard');
+  revalidatePath('/technician/jobs');
   revalidatePath(`/technician/jobs/${booking.order_id}`);
 }
 
@@ -90,6 +95,9 @@ export async function assignTechnician(formData: FormData) {
   revalidatePath('/admin/bookings');
   revalidatePath(`/admin/bookings/${booking.order_id}`);
   revalidatePath('/admin/dashboard');
+  revalidatePath('/technician/dashboard');
+  revalidatePath('/technician/jobs');
+  revalidatePath(`/technician/jobs/${booking.order_id}`);
 }
 
 export async function createAdminBooking(formData: FormData) {

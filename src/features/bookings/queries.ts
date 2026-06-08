@@ -124,6 +124,26 @@ export async function getBookingByOrderId(orderId: string) {
   return booking;
 }
 
+export async function getTechnicianBookingByOrderId(orderId: string, technicianId: string) {
+  if (!hasSupabaseConfig()) {
+    return mockBookings.find((booking) => booking.order_id === orderId || booking.id === orderId) || mockBookings[0];
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const query = supabase
+    .from('bookings')
+    .select('*')
+    .eq('assigned_technician_id', technicianId);
+
+  const { data, error } = isUuid(orderId)
+    ? await query.eq('id', orderId).single()
+    : await query.eq('order_id', orderId).single();
+
+  if (error) throw error;
+  const [booking] = await hydrateBookings([data as BookingRow]);
+  return booking;
+}
+
 export async function getTechnicianJobs(profileId?: string) {
   if (!hasSupabaseConfig() || !profileId) {
     return mockBookings.filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status));

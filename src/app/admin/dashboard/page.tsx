@@ -162,9 +162,9 @@ export default async function AdminDashboardPage() {
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
             <h3 className="text-base font-extrabold text-[#0B2A4A]">Dispatch lanes</h3>
             <div className="mt-4 space-y-3">
-              <Lane title="Pending confirmation" count={pendingBookings.length} tone="amber" href="/admin/bookings" />
-              <Lane title="Ready to assign" count={unassignedConfirmed.length} tone="sky" href="/admin/bookings" />
-              <Lane title="In field progress" count={fieldJobs.length} tone="emerald" href="/admin/bookings" />
+              <Lane title="Pending confirmation" count={pendingBookings.length} tone="amber" href="/admin/bookings?status=pending" />
+              <Lane title="Ready to assign" count={unassignedConfirmed.length} tone="sky" href="/admin/bookings?status=confirmed&unassigned=1" />
+              <Lane title="In field progress" count={fieldJobs.length} tone="emerald" href="/admin/bookings?status=field" />
             </div>
           </div>
           <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
