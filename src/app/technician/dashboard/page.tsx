@@ -2,12 +2,12 @@ import Link from 'next/link';
 import { ArrowRight, CalendarClock, CheckCircle2, MapPin, Phone, Route, Wrench } from 'lucide-react';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { getTechnicianJobs } from '@/features/bookings/queries';
+import { getTechnicianCompletedJobs, getTechnicianJobs } from '@/features/bookings/queries';
 import { requireRole } from '@/lib/auth/session';
 
 export default async function TechnicianDashboardPage() {
   const profile = await requireRole(['technician']);
-  const jobs = await getTechnicianJobs(profile.id);
+  const [jobs, completedJobs] = await Promise.all([getTechnicianJobs(profile.id), getTechnicianCompletedJobs(profile.id, 10)]);
   const nextJob = jobs[0];
   const todayKey = new Date().toISOString().slice(0, 10);
   const todayJobs = jobs.filter((job) => job.preferred_date === todayKey);
@@ -24,7 +24,7 @@ export default async function TechnicianDashboardPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Metric label="Assigned" value={jobs.length} />
         <Metric label="Today" value={todayJobs.length} />
-        <Metric label="In progress" value={acceptedJobs.length} />
+        <Metric label="Completed" value={completedJobs.length} />
       </div>
 
       {nextJob ? (
@@ -74,7 +74,7 @@ export default async function TechnicianDashboardPage() {
       <section className="mt-6 rounded-lg border border-gray-100 bg-white shadow-sm">
         <div className="border-b border-gray-100 p-5">
           <h2 className="text-lg font-extrabold text-[#0B2A4A]">Assigned job list</h2>
-          <p className="mt-1 text-sm font-medium text-gray-500">All active jobs assigned to you.</p>
+          <p className="mt-1 text-sm font-medium text-gray-500">{acceptedJobs.length} jobs are currently moving in the field.</p>
         </div>
         <div className="grid gap-4 p-5">
           {jobs.map((job) => (
@@ -89,6 +89,30 @@ export default async function TechnicianDashboardPage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="mt-6 rounded-lg border border-gray-100 bg-white shadow-sm">
+        <div className="border-b border-gray-100 p-5">
+          <h2 className="text-lg font-extrabold text-[#0B2A4A]">Completed history</h2>
+          <p className="mt-1 text-sm font-medium text-gray-500">Recent jobs you completed.</p>
+        </div>
+        <div className="grid gap-4 p-5">
+          {completedJobs.map((job) => (
+            <Link key={job.id} href={`/technician/jobs/${job.order_id}`} className="rounded-lg border border-gray-100 bg-gray-50 p-5 transition hover:border-[#2EA9D6] hover:bg-white">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-bold text-[#0B2A4A]">{job.order_id}</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-600">{job.services?.title || job.service_id || 'General Inquiry'}</p>
+                  <p className="mt-1 text-sm text-gray-500">{job.final_price ? `BDT ${job.final_price}` : 'Final price not set'}</p>
+                </div>
+                <StatusBadge status={job.status} />
+              </div>
+            </Link>
+          ))}
+          {completedJobs.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-gray-200 p-5 text-sm font-semibold text-gray-500">No completed jobs yet.</div>
+          ) : null}
         </div>
       </section>
     </TechnicianShell>

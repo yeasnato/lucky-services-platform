@@ -5,7 +5,7 @@ import { AdminShell } from '@/components/admin/DashboardShell';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { assignTechnician, deleteBooking, updateBookingFields, updateBookingStatus } from '@/features/bookings/actions';
-import { getBookingByOrderId, getBookingEvents, getServicesForSelect } from '@/features/bookings/queries';
+import { getAdminBookings, getBookingByOrderId, getBookingEvents, getServicesForSelect } from '@/features/bookings/queries';
 import { getAllowedStatusTransitions } from '@/features/bookings/status-machine';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
@@ -38,11 +38,13 @@ export default async function BookingDetailPage({
     );
   }
 
-  const [technicians, events, serviceOptions] = await Promise.all([
+  const [technicians, events, serviceOptions, allBookings] = await Promise.all([
     getTechnicians().catch(() => []),
     getBookingEvents(booking.id).catch(() => []),
-    getServicesForSelect().catch(() => [])
+    getServicesForSelect().catch(() => []),
+    getAdminBookings().catch(() => [])
   ]);
+  const activeCounts = getActiveCounts(allBookings);
   const allowedActions = getAllowedStatusTransitions(booking.status, 'admin');
   const canConfirm = allowedActions.includes('confirmed');
   const canAssign = allowedActions.includes('assigned');
@@ -224,7 +226,7 @@ export default async function BookingDetailPage({
                 <option value="">Select technician</option>
                 {technicians.map((technician) => (
                   <option key={technician.id} value={technician.id}>
-                    {technician.display_name}
+                    {technician.display_name} - {technician.availability_status.replaceAll('_', ' ')} - {activeCounts.get(technician.id) || 0} active
                   </option>
                 ))}
               </select>
@@ -307,4 +309,14 @@ function EditField({
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
+}
+
+function getActiveCounts(bookings: { status: string; assigned_technician_id: string | null }[]) {
+  const counts = new Map<string, number>();
+  bookings
+    .filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status) && booking.assigned_technician_id)
+    .forEach((booking) => {
+      counts.set(booking.assigned_technician_id!, (counts.get(booking.assigned_technician_id!) || 0) + 1);
+    });
+  return counts;
 }

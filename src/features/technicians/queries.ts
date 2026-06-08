@@ -36,3 +36,25 @@ export async function getTechnicians() {
 
   return (data || []) as TechnicianRow[];
 }
+
+export async function getTechnicianById(id: string) {
+  if (!hasSupabaseConfig()) {
+    return mockTechnicians.find((technician) => technician.id === id) || null;
+  }
+
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    supabase = await createServerSupabaseClient();
+  }
+
+  const { data, error } = await supabase
+    .from('technician_profiles')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) return null;
+  return data as TechnicianRow;
+}

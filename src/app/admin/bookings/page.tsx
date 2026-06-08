@@ -37,6 +37,7 @@ export default async function AdminBookingsPage({
     field: bookings.filter((booking) => fieldStatuses.includes(booking.status)).length,
     completed: bookings.filter((booking) => booking.status === 'completed').length
   };
+  const activeCounts = getActiveCounts(bookings);
 
   return (
     <AdminShell
@@ -134,7 +135,7 @@ export default async function AdminBookingsPage({
                     <StatusBadge status={booking.status} />
                   </td>
                   <td className="px-5 py-4">
-                    <QuickAction booking={booking} technicians={technicians} />
+                    <QuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} />
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link href={`/admin/bookings/${booking.order_id}`} className="font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
@@ -171,7 +172,7 @@ export default async function AdminBookingsPage({
                 </p>
               </div>
               <div className="mt-4 grid gap-3">
-                <QuickAction booking={booking} technicians={technicians} />
+                <QuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} />
                 <Link href={`/admin/bookings/${booking.order_id}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A]">
                   Manage order
                   <ArrowRight className="size-4" aria-hidden="true" />
@@ -192,7 +193,15 @@ export default async function AdminBookingsPage({
   );
 }
 
-function QuickAction({ booking, technicians }: { booking: BookingRow; technicians: TechnicianRow[] }) {
+function QuickAction({
+  booking,
+  technicians,
+  activeCounts
+}: {
+  booking: BookingRow;
+  technicians: TechnicianRow[];
+  activeCounts: Map<string, number>;
+}) {
   if (booking.status === 'pending') {
     return (
       <form
@@ -224,7 +233,7 @@ function QuickAction({ booking, technicians }: { booking: BookingRow; technician
           <option value="">Assign technician</option>
           {technicians.map((technician) => (
             <option key={technician.id} value={technician.id}>
-              {technician.display_name}
+              {technician.display_name} - {technician.availability_status.replaceAll('_', ' ')} - {activeCounts.get(technician.id) || 0} active
             </option>
           ))}
         </select>
@@ -240,6 +249,16 @@ function QuickAction({ booking, technicians }: { booking: BookingRow; technician
   }
 
   return <span className="text-sm font-semibold text-slate-400">Open details</span>;
+}
+
+function getActiveCounts(bookings: BookingRow[]) {
+  const counts = new Map<string, number>();
+  bookings
+    .filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status) && booking.assigned_technician_id)
+    .forEach((booking) => {
+      counts.set(booking.assigned_technician_id!, (counts.get(booking.assigned_technician_id!) || 0) + 1);
+    });
+  return counts;
 }
 
 function QueueTab({ label, count, href, active }: { label: string; count: number; href: string; active: boolean }) {

@@ -19,6 +19,8 @@ export interface BookingRow {
   final_price?: number | null;
   confirmed_at?: string | null;
   assigned_at?: string | null;
+  updated_at?: string | null;
+  completed_at?: string | null;
   services?: {
     title: string;
   } | null;
@@ -91,6 +93,8 @@ const mockBookings: BookingRow[] = [
   }
 ];
 
+const activeTechnicianStatuses = ['assigned', 'accepted', 'on_the_way', 'in_progress'];
+
 export async function getAdminBookings() {
   if (!hasSupabaseConfig()) return mockBookings;
 
@@ -146,7 +150,7 @@ export async function getTechnicianBookingByOrderId(orderId: string, technicianI
 
 export async function getTechnicianJobs(profileId?: string) {
   if (!hasSupabaseConfig() || !profileId) {
-    return mockBookings.filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status));
+    return mockBookings.filter((booking) => activeTechnicianStatuses.includes(booking.status));
   }
 
   const supabase = await createServerSupabaseClient();
@@ -154,8 +158,43 @@ export async function getTechnicianJobs(profileId?: string) {
     .from('bookings')
     .select('*')
     .eq('assigned_technician_id', profileId)
-    .in('status', ['assigned', 'accepted', 'on_the_way', 'in_progress'])
+    .in('status', activeTechnicianStatuses)
     .order('preferred_date', { ascending: true });
+
+  if (error) throw error;
+  return hydrateBookings((data || []) as BookingRow[]);
+}
+
+export async function getTechnicianCompletedJobs(profileId?: string, limit = 20) {
+  if (!hasSupabaseConfig() || !profileId) {
+    return mockBookings.filter((booking) => booking.status === 'completed');
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('assigned_technician_id', profileId)
+    .eq('status', 'completed')
+    .order('updated_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return hydrateBookings((data || []) as BookingRow[]);
+}
+
+export async function getAdminTechnicianJobs(technicianId: string, limit = 50) {
+  if (!hasSupabaseConfig()) {
+    return mockBookings.filter((booking) => booking.assigned_technician_id === technicianId);
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('assigned_technician_id', technicianId)
+    .order('updated_at', { ascending: false })
+    .limit(limit);
 
   if (error) throw error;
   return hydrateBookings((data || []) as BookingRow[]);

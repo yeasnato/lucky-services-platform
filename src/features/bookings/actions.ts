@@ -54,6 +54,73 @@ export async function updateBookingStatus(bookingId: string, status: string) {
   revalidatePath(`/technician/jobs/${booking.order_id}`);
 }
 
+export async function completeTechnicianJob(formData: FormData) {
+  const profile = await requireRole(['technician']);
+  const bookingId = String(formData.get('bookingId') || '');
+  const finalPriceValue = String(formData.get('finalPrice') || '').trim();
+  const completionNote = String(formData.get('completionNote') || '').trim();
+
+  if (!bookingId) throw new Error('Booking is required.');
+  if (!completionNote) throw new Error('A completion note is required.');
+
+  const finalPrice = finalPriceValue ? Number(finalPriceValue) : null;
+  if (finalPrice !== null && (!Number.isFinite(finalPrice) || finalPrice <= 0)) {
+    throw new Error('Final price must be a positive number.');
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('status, order_id, assigned_technician_id, notes, final_price')
+    .eq('id', bookingId)
+    .single();
+
+  if (bookingError) throw bookingError;
+  if (booking.assigned_technician_id !== profile.id) {
+    throw new Error('This job is not assigned to your technician profile.');
+  }
+  if (!finalPrice && !booking.final_price) {
+    throw new Error('Final price is required before completing this job.');
+  }
+
+  assertCanTransition(booking.status, 'completed', profile.role);
+
+  const noteLine = `Technician completion note: ${completionNote}`;
+  const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
+  const resolvedFinalPrice = finalPrice ?? booking.final_price ?? null;
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      status: 'completed',
+      final_price: resolvedFinalPrice,
+      notes: updatedNotes,
+      completed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', bookingId);
+
+  if (error) throw error;
+
+  await supabase.from('booking_events').insert({
+    booking_id: bookingId,
+    actor_id: profile.id,
+    event_type: 'status_changed',
+    from_status: booking.status,
+    to_status: 'completed',
+    note: `Job completed. Final price: ${resolvedFinalPrice ? `BDT ${resolvedFinalPrice}` : 'not set'}. ${completionNote}`
+  });
+
+  revalidatePath('/admin/bookings');
+  revalidatePath(`/admin/bookings/${booking.order_id}`);
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/technicians');
+  revalidatePath(`/admin/technicians/${profile.id}`);
+  revalidatePath('/technician/dashboard');
+  revalidatePath('/technician/jobs');
+  revalidatePath(`/technician/jobs/${booking.order_id}`);
+}
+
 export async function assignTechnician(formData: FormData) {
   const profile = await requireRole(['admin']);
   const bookingId = String(formData.get('bookingId') || '');

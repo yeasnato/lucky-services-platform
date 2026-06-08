@@ -1,6 +1,8 @@
-import { Plus, ShieldCheck, Star, UserRound } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, BriefcaseBusiness, Plus, ShieldCheck, Star, UserRound } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { SubmitButton } from '@/components/admin/SubmitButton';
+import { getAdminBookings } from '@/features/bookings/queries';
 import { createTechnician } from '@/features/technicians/actions';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
@@ -12,7 +14,13 @@ export default async function AdminTechniciansPage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
-  const technicians = await getTechnicians().catch(() => []);
+  const [technicians, bookings] = await Promise.all([getTechnicians().catch(() => []), getAdminBookings().catch(() => [])]);
+  const activeCounts = new Map<string, number>();
+  bookings
+    .filter((booking) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(booking.status) && booking.assigned_technician_id)
+    .forEach((booking) => {
+      activeCounts.set(booking.assigned_technician_id!, (activeCounts.get(booking.assigned_technician_id!) || 0) + 1);
+    });
 
   return (
     <AdminShell
@@ -42,7 +50,7 @@ export default async function AdminTechniciansPage({
           </div>
           <div className="divide-y divide-slate-100">
             {technicians.map((technician) => (
-              <div key={technician.id} className="grid gap-4 p-5 md:grid-cols-[1fr_150px_150px] md:items-center">
+              <div key={technician.id} className="grid gap-4 p-5 md:grid-cols-[1fr_130px_130px_120px] md:items-center">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">
                     <UserRound className="size-5" aria-hidden="true" />
@@ -53,12 +61,20 @@ export default async function AdminTechniciansPage({
                   </div>
                 </div>
                 <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-600">
+                  <BriefcaseBusiness className="size-4 text-[#2EA9D6]" aria-hidden="true" />
+                  {activeCounts.get(technician.id) || 0} active
+                </p>
+                <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-600">
                   <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                   {technician.rating || 'New'}
                 </p>
                 <span className="inline-flex items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold capitalize text-sky-700">
                   {technician.availability_status.replaceAll('_', ' ')}
                 </span>
+                <Link href={`/admin/technicians/${technician.id}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]">
+                  Details
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
               </div>
             ))}
           </div>

@@ -3,7 +3,7 @@ import { BadgeDollarSign, CalendarClock, CheckCircle2, MapPin, MessageSquareText
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { updateBookingStatus } from '@/features/bookings/actions';
+import { completeTechnicianJob, updateBookingStatus } from '@/features/bookings/actions';
 import { getTechnicianBookingByOrderId } from '@/features/bookings/queries';
 import { getAllowedStatusTransitions } from '@/features/bookings/status-machine';
 import { requireRole } from '@/lib/auth/session';
@@ -122,7 +122,30 @@ export default async function TechnicianJobPage({ params }: { params: Promise<{ 
             </form>
           ) : null}
           {allowedActions.includes('completed') ? (
-            <form action={async () => { 'use server'; await updateBookingStatus(job.id, 'completed'); }} className="mt-3">
+            <form action={completeTechnicianJob} className="mt-4 space-y-3 rounded-lg border border-emerald-100 bg-emerald-50 p-3">
+              <input type="hidden" name="bookingId" value={job.id} />
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-emerald-700">Final price</span>
+                <input
+                  name="finalPrice"
+                  type="number"
+                  min="1"
+                  required={!job.final_price}
+                  defaultValue={job.final_price || ''}
+                  placeholder="Enter final price"
+                  className="min-h-[44px] w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-emerald-700">Completion note</span>
+                <textarea
+                  name="completionNote"
+                  required
+                  rows={3}
+                  placeholder="What was done? Mention price change reason if changed."
+                  className="w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]"
+                />
+              </label>
               <SubmitButton pendingLabel="Completing..." className="w-full rounded-lg bg-[#25D366] px-4 py-3 text-sm font-bold text-white">
                 Complete Job
               </SubmitButton>
