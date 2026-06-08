@@ -5,7 +5,12 @@ import { StatusBadge } from '@/components/admin/StatusBadge';
 import { requireRole } from '@/lib/auth/session';
 import { getAdminBookings } from '@/features/bookings/queries';
 
-export default async function AdminBookingsPage() {
+export default async function AdminBookingsPage({
+  searchParams
+}: {
+  searchParams?: Promise<{ deleted?: string }>;
+}) {
+  const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
   const bookings = await getAdminBookings();
 
@@ -23,6 +28,12 @@ export default async function AdminBookingsPage() {
         </Link>
       }
     >
+      {resolvedSearchParams.deleted === '1' ? (
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-extrabold text-emerald-800">
+          Order deleted successfully.
+        </div>
+      ) : null}
+
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
           <div>

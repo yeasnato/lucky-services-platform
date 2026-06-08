@@ -19,7 +19,7 @@ export default async function NewAdminBookingPage() {
             <ClipboardPlus className="size-5 text-[#2EA9D6]" aria-hidden="true" />
             Manual booking
           </h2>
-          <p className="mt-1 text-sm font-medium text-slate-500">Phone and admin orders are created as confirmed, so you can assign a technician immediately.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Every order is created as pending. Confirm it first, then assign a technician.</p>
         </div>
 
         <form action={createAdminBooking} className="grid gap-5 p-5 md:grid-cols-2">
@@ -89,7 +89,7 @@ export default async function NewAdminBookingPage() {
               className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto"
             >
               <ClipboardPlus className="size-4" aria-hidden="true" />
-              Create confirmed order
+              Create pending order
             </SubmitButton>
             <p className="mt-2 text-xs font-semibold text-slate-400">The button locks while saving to prevent duplicate orders.</p>
           </div>

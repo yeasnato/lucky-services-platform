@@ -97,12 +97,12 @@ export async function getAdminBookings() {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, services(title), technician_profiles(display_name, phone)')
+    .select('*')
     .order('created_at', { ascending: false })
     .limit(50);
 
   if (error) throw error;
-  return (data || []) as BookingRow[];
+  return hydrateBookings((data || []) as BookingRow[]);
 }
 
 export async function getBookingByOrderId(orderId: string) {
@@ -113,12 +113,13 @@ export async function getBookingByOrderId(orderId: string) {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, services(title), technician_profiles(display_name, phone)')
+    .select('*')
     .or(`order_id.eq.${orderId},id.eq.${orderId}`)
     .single();
 
   if (error) throw error;
-  return data as BookingRow;
+  const [booking] = await hydrateBookings([data as BookingRow]);
+  return booking;
 }
 
 export async function getTechnicianJobs(profileId?: string) {
@@ -129,13 +130,13 @@ export async function getTechnicianJobs(profileId?: string) {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, services(title)')
+    .select('*')
     .eq('assigned_technician_id', profileId)
     .in('status', ['assigned', 'accepted', 'on_the_way', 'in_progress'])
     .order('preferred_date', { ascending: true });
 
   if (error) throw error;
-  return (data || []) as BookingRow[];
+  return hydrateBookings((data || []) as BookingRow[]);
 }
 
 export async function getDashboardStats() {
@@ -173,7 +174,17 @@ export async function getBookingEvents(bookingId: string) {
     .eq('booking_id', bookingId)
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('booking_events')
+      .select('*')
+      .eq('booking_id', bookingId)
+      .order('created_at', { ascending: false });
+
+    if (fallbackError) return [];
+    return (fallbackData || []) as BookingEventRow[];
+  }
+
   return (data || []) as BookingEventRow[];
 }
 
@@ -191,4 +202,35 @@ export async function getServicesForSelect() {
 
   if (error) throw error;
   return data || [];
+}
+
+async function hydrateBookings(bookings: BookingRow[]) {
+  if (!bookings.length || !hasSupabaseConfig()) return bookings;
+
+  const supabase = await createServerSupabaseClient();
+  const serviceIds = Array.from(new Set(bookings.map((booking) => booking.service_id).filter(Boolean))) as string[];
+  const technicianIds = Array.from(new Set(bookings.map((booking) => booking.assigned_technician_id).filter(Boolean))) as string[];
+
+  const [servicesResult, techniciansResult] = await Promise.all([
+    serviceIds.length
+      ? supabase.from('services').select('id, title').in('id', serviceIds)
+      : Promise.resolve({ data: [], error: null }),
+    technicianIds.length
+      ? supabase.from('technician_profiles').select('id, display_name, phone').in('id', technicianIds)
+      : Promise.resolve({ data: [], error: null })
+  ]);
+
+  const serviceMap = new Map((servicesResult.data || []).map((service) => [service.id, service]));
+  const technicianMap = new Map((techniciansResult.data || []).map((technician) => [technician.id, technician]));
+
+  return bookings.map((booking) => ({
+    ...booking,
+    services: booking.service_id ? { title: serviceMap.get(booking.service_id)?.title || booking.service_id } : null,
+    technician_profiles: booking.assigned_technician_id
+      ? {
+          display_name: technicianMap.get(booking.assigned_technician_id)?.display_name || 'Assigned technician',
+          phone: technicianMap.get(booking.assigned_technician_id)?.phone || ''
+        }
+      : null
+  }));
 }

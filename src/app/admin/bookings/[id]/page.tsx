@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import { BadgeDollarSign, CalendarClock, CheckCircle2, Info as InfoIcon, MapPin, MessageSquareText, Phone, UserRoundCheck, XCircle } from 'lucide-react';
+import { BadgeDollarSign, Calendar, CalendarClock, CheckCircle2, Clock, FileText, Info as InfoIcon, MapPin, MessageSquareText, Phone, Save, Trash2, User, UserRoundCheck, XCircle } from 'lucide-react';
 import { BookingTimeline } from '@/components/admin/BookingTimeline';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { assignTechnician, updateBookingStatus } from '@/features/bookings/actions';
-import { getBookingByOrderId, getBookingEvents } from '@/features/bookings/queries';
+import { assignTechnician, deleteBooking, updateBookingFields, updateBookingStatus } from '@/features/bookings/actions';
+import { getBookingByOrderId, getBookingEvents, getServicesForSelect } from '@/features/bookings/queries';
 import { getAllowedStatusTransitions } from '@/features/bookings/status-machine';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
@@ -21,7 +21,7 @@ export default async function BookingDetailPage({
   const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
   const booking = await getBookingByOrderId(id);
-  const [technicians, events] = await Promise.all([getTechnicians(), getBookingEvents(booking.id)]);
+  const [technicians, events, serviceOptions] = await Promise.all([getTechnicians(), getBookingEvents(booking.id), getServicesForSelect()]);
   const allowedActions = getAllowedStatusTransitions(booking.status, 'admin');
   const canConfirm = allowedActions.includes('confirmed');
   const canAssign = allowedActions.includes('assigned');
@@ -38,7 +38,7 @@ export default async function BookingDetailPage({
                 Order created successfully
               </p>
               <p className="mt-1 text-sm font-semibold text-emerald-700">
-                This order is confirmed and ready for technician assignment.
+                This order is pending. Confirm it first, then assign a technician.
               </p>
             </div>
           ) : null}
@@ -104,6 +104,61 @@ export default async function BookingDetailPage({
                 <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{booking.notes || 'No customer notes were added.'}</p>
               </div>
             </div>
+          </section>
+
+          <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 p-5">
+              <h3 className="inline-flex items-center gap-2 text-lg font-extrabold text-[#0B2A4A]">
+                <Save className="size-5 text-[#2EA9D6]" aria-hidden="true" />
+                Edit order
+              </h3>
+              <p className="mt-1 text-sm font-medium text-slate-500">Update customer details, schedule, service, notes, or final price.</p>
+            </div>
+            <form action={updateBookingFields} className="grid gap-5 p-5 md:grid-cols-2">
+              <input type="hidden" name="bookingId" value={booking.id} />
+              <EditField icon={<User size={18} />} name="customerName" defaultValue={booking.customer_name} placeholder="Customer name" required />
+              <EditField icon={<Phone size={18} />} name="customerPhone" defaultValue={booking.customer_phone} placeholder="Phone number" required type="tel" />
+
+              <label className="relative block md:col-span-2">
+                <span className="absolute left-4 top-3.5 text-slate-400">
+                  <MapPin size={18} />
+                </span>
+                <textarea name="address" required rows={2} defaultValue={booking.address} placeholder="Address" className={fieldClassName} />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-bold text-slate-600">Service</span>
+                <select name="serviceId" defaultValue={booking.service_id || ''} className="min-h-[50px] w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
+                  <option value="">General inquiry</option>
+                  {serviceOptions.map((service) => (
+                    <option key={service.id} value={service.id}>
+                      {service.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <EditField icon={<BadgeDollarSign size={18} />} name="finalPrice" defaultValue={booking.final_price || ''} placeholder="Final price" type="number" min="1" />
+              <EditField icon={<Calendar size={18} />} name="preferredDate" defaultValue={booking.preferred_date} required type="date" />
+              <EditField icon={<Clock size={18} />} name="preferredTime" defaultValue={booking.preferred_time} required />
+
+              <label className="relative block md:col-span-2">
+                <span className="absolute left-4 top-3.5 text-slate-400">
+                  <FileText size={18} />
+                </span>
+                <textarea name="notes" rows={3} defaultValue={booking.notes || ''} placeholder="Notes" className={fieldClassName} />
+              </label>
+
+              <div className="md:col-span-2">
+                <SubmitButton
+                  pendingLabel="Saving changes..."
+                  className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto"
+                >
+                  <Save className="size-4" aria-hidden="true" />
+                  Save changes
+                </SubmitButton>
+              </div>
+            </form>
           </section>
 
           <BookingTimeline events={events} />
@@ -180,6 +235,18 @@ export default async function BookingDetailPage({
             </form>
           ) : null}
 
+          <form action={deleteBooking} className="mt-5 border-t border-slate-200 pt-5">
+            <input type="hidden" name="bookingId" value={booking.id} />
+            <SubmitButton
+              pendingLabel="Deleting..."
+              confirmMessage="Delete this booking permanently? This cannot be undone."
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+            >
+              <Trash2 className="size-4" aria-hidden="true" />
+              Delete order
+            </SubmitButton>
+          </form>
+
           {!canConfirm && !canAssign && !canCancel ? (
             <div className="mt-5 rounded-lg bg-slate-50 p-4 text-sm font-semibold text-slate-500">
               No admin action is available for this status.
@@ -197,6 +264,23 @@ function Info({ label, value }: { label: string; value: React.ReactNode }) {
       <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
       <div className="mt-2 font-bold text-[#0B2A4A]">{value}</div>
     </div>
+  );
+}
+
+const fieldClassName =
+  'min-h-[50px] w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm font-bold text-[#0B2A4A] outline-none transition placeholder:text-slate-400 focus:border-[#2EA9D6] focus:bg-white focus:ring-2 focus:ring-[#2EA9D6]/20';
+
+function EditField({
+  icon,
+  ...props
+}: React.InputHTMLAttributes<HTMLInputElement> & {
+  icon: React.ReactNode;
+}) {
+  return (
+    <label className="relative block">
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
+      <input {...props} className={fieldClassName} />
+    </label>
   );
 }
 
