@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export function LoginForm() {
+export function LoginForm({
+  allowedRole,
+  fallbackPath
+}: {
+  allowedRole?: 'admin' | 'technician';
+  fallbackPath?: string;
+} = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +34,32 @@ export function LoginForm() {
       return;
     }
 
-    const { data: profile } = await supabase.from('profiles').select('role').single();
-    const next = searchParams.get('next');
-    const fallbackPath = profile?.role === 'technician' ? '/technician/dashboard' : '/admin/dashboard';
+    const { data: profile, error: profileError } = await supabase.from('profiles').select('role, status').single();
 
-    router.push(next || fallbackPath);
+    if (profileError || !profile || profile.status !== 'active') {
+      await supabase.auth.signOut();
+      setError('Your staff profile is not active. Please contact admin.');
+      setLoading(false);
+      return;
+    }
+
+    if (allowedRole && profile.role !== allowedRole) {
+      await supabase.auth.signOut();
+      setError(allowedRole === 'admin' ? 'Please use an admin account.' : 'Please use a technician account.');
+      setLoading(false);
+      return;
+    }
+
+    const requestedNext = searchParams.get('next');
+    const next =
+      allowedRole === 'admin'
+        ? requestedNext?.startsWith('/admin') ? requestedNext : null
+        : allowedRole === 'technician'
+          ? requestedNext?.startsWith('/technician') ? requestedNext : null
+          : requestedNext;
+    const roleFallbackPath = fallbackPath || (profile.role === 'technician' ? '/technician/dashboard' : '/admin/dashboard');
+
+    router.push(next || roleFallbackPath);
     router.refresh();
   }
 

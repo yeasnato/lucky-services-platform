@@ -2,8 +2,13 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 const protectedPrefixes = ['/admin', '/technician'];
+const publicDashboardAuthPaths = ['/admin/login', '/technician/login'];
 
 export async function middleware(request: NextRequest) {
+  if (publicDashboardAuthPaths.includes(request.nextUrl.pathname)) {
+    return NextResponse.next();
+  }
+
   const needsAuth = protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix));
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -33,7 +38,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = request.nextUrl.pathname.startsWith('/technician') ? '/technician/login' : '/admin/login';
     url.searchParams.set('next', request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
@@ -43,7 +48,7 @@ export async function middleware(request: NextRequest) {
 
   if (!profile || profile.status !== 'active') {
     const url = request.nextUrl.clone();
-    url.pathname = '/login';
+    url.pathname = request.nextUrl.pathname.startsWith('/technician') ? '/technician/login' : '/admin/login';
     url.searchParams.delete('next');
     return NextResponse.redirect(url);
   }

@@ -20,8 +20,29 @@ export default async function BookingDetailPage({
   const { id } = await params;
   const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
-  const booking = await getBookingByOrderId(id);
-  const [technicians, events, serviceOptions] = await Promise.all([getTechnicians(), getBookingEvents(booking.id), getServicesForSelect()]);
+  const booking = await getBookingByOrderId(id).catch(() => null);
+
+  if (!booking) {
+    return (
+      <AdminShell title="Order could not load" eyebrow="Booking detail" description="The order link may be old, deleted, or temporarily unavailable.">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
+          <p className="font-extrabold text-amber-900">This order could not be opened.</p>
+          <p className="mt-2 text-sm font-semibold text-amber-800">
+            Go back to the booking queue and open the order again. If it still fails, the order may have been deleted.
+          </p>
+          <Link href="/admin/bookings" className="mt-4 inline-flex rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white">
+            Back to bookings
+          </Link>
+        </div>
+      </AdminShell>
+    );
+  }
+
+  const [technicians, events, serviceOptions] = await Promise.all([
+    getTechnicians().catch(() => []),
+    getBookingEvents(booking.id).catch(() => []),
+    getServicesForSelect().catch(() => [])
+  ]);
   const allowedActions = getAllowedStatusTransitions(booking.status, 'admin');
   const canConfirm = allowedActions.includes('confirmed');
   const canAssign = allowedActions.includes('assigned');

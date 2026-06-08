@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import Link from 'next/link';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { Logo } from '@/components/marketing/Logo';
 
@@ -18,6 +19,10 @@ export default function LoginPage() {
           <p className="mt-5 text-center text-xs text-gray-400">
             Customers do not need an account. This login is only for admin and technicians.
           </p>
+          <div className="mt-4 flex justify-center gap-4 text-xs font-bold text-[#2EA9D6]">
+            <Link href="/admin/login">Admin login</Link>
+            <Link href="/technician/login">Technician login</Link>
+          </div>
         </div>
       </div>
     </main>

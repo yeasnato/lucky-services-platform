@@ -111,11 +111,13 @@ export async function getBookingByOrderId(orderId: string) {
   }
 
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
+  const query = supabase
     .from('bookings')
-    .select('*')
-    .or(`order_id.eq.${orderId},id.eq.${orderId}`)
-    .single();
+    .select('*');
+
+  const { data, error } = isUuid(orderId)
+    ? await query.eq('id', orderId).single()
+    : await query.eq('order_id', orderId).single();
 
   if (error) throw error;
   const [booking] = await hydrateBookings([data as BookingRow]);
@@ -233,4 +235,8 @@ async function hydrateBookings(bookings: BookingRow[]) {
         }
       : null
   }));
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
