@@ -14,6 +14,10 @@ export interface BookingRow {
   source: string;
   assigned_technician_id: string | null;
   created_at: string;
+  notes?: string | null;
+  final_price?: number | null;
+  confirmed_at?: string | null;
+  assigned_at?: string | null;
   services?: {
     title: string;
   } | null;

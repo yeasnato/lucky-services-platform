@@ -1,3 +1,4 @@
+import { Plus, ShieldCheck, Star, UserRound } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { createTechnician } from '@/features/technicians/actions';
 import { getTechnicians } from '@/features/technicians/queries';
@@ -8,38 +9,68 @@ export default async function AdminTechniciansPage() {
   const technicians = await getTechnicians();
 
   return (
-    <AdminShell>
+    <AdminShell
+      title="Technician team"
+      description="Create technician logins, review availability, and prepare the field team for assigned bookings."
+    >
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-100 p-5">
-            <h2 className="text-lg font-extrabold text-[#0B2A4A]">Technicians</h2>
-            <p className="text-sm text-gray-500">Manage availability and assignment readiness.</p>
+        <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-lg font-extrabold text-[#0B2A4A]">Field team</h2>
+              <p className="mt-1 text-sm font-medium text-slate-500">Technicians available for admin assignment.</p>
+            </div>
+            <div className="rounded-lg bg-[#F0F9FC] px-3 py-2 text-sm font-extrabold text-[#0B2A4A]">{technicians.length} technicians</div>
           </div>
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-slate-100">
             {technicians.map((technician) => (
-              <div key={technician.id} className="grid gap-3 p-5 md:grid-cols-[1fr_1fr_140px]">
-                <div>
-                  <p className="font-bold text-[#0B2A4A]">{technician.display_name}</p>
-                  <p className="text-sm text-gray-500">{technician.phone}</p>
+              <div key={technician.id} className="grid gap-4 p-5 md:grid-cols-[1fr_150px_150px] md:items-center">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">
+                    <UserRound className="size-5" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#0B2A4A]">{technician.display_name}</p>
+                    <p className="text-sm font-medium text-slate-500">{technician.phone}</p>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-600">Rating: {technician.rating || 'New'}</p>
-                <span className="rounded-full bg-[#F0F9FC] px-3 py-1 text-center text-xs font-bold capitalize text-[#2EA9D6]">
+                <p className="inline-flex items-center gap-2 text-sm font-bold text-slate-600">
+                  <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                  {technician.rating || 'New'}
+                </p>
+                <span className="inline-flex items-center justify-center rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold capitalize text-sky-700">
                   {technician.availability_status.replaceAll('_', ' ')}
                 </span>
               </div>
             ))}
           </div>
+          {technicians.length === 0 ? (
+            <div className="p-8 text-center">
+              <p className="font-bold text-[#0B2A4A]">No technicians yet</p>
+              <p className="mt-1 text-sm text-slate-500">Create the first technician login from the form.</p>
+            </div>
+          ) : null}
         </div>
 
-        <aside className="h-fit rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-extrabold text-[#0B2A4A]">Create Technician Login</h3>
-          <p className="mt-1 text-sm text-gray-500">Admin creates the email/password and gives it to the technician.</p>
+        <aside className="h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">
+              <ShieldCheck className="size-5" aria-hidden="true" />
+            </div>
+            <div>
+              <h3 className="text-lg font-extrabold text-[#0B2A4A]">Create login</h3>
+              <p className="text-sm font-medium text-slate-500">Admin gives these credentials to the technician.</p>
+            </div>
+          </div>
           <form action={createTechnician} className="mt-5 space-y-4">
-            <input name="fullName" required placeholder="Technician name" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
-            <input name="email" required type="email" placeholder="Email" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
-            <input name="phone" required placeholder="Phone" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
-            <input name="password" required type="password" minLength={8} placeholder="Temporary password" className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
-            <button className="w-full rounded-xl bg-[#2EA9D6] py-3 text-sm font-bold text-white">Create Technician</button>
+            <input name="fullName" required placeholder="Technician name" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
+            <input name="email" required type="email" placeholder="Email" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
+            <input name="phone" required placeholder="Phone" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
+            <input name="password" required type="password" minLength={8} placeholder="Temporary password" className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none focus:border-[#2EA9D6]" />
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]">
+              <Plus className="size-4" aria-hidden="true" />
+              Create technician
+            </button>
           </form>
         </aside>
       </div>

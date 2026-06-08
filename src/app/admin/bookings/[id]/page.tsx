@@ -1,4 +1,7 @@
+import Link from 'next/link';
+import { BadgeDollarSign, CalendarClock, CheckCircle2, MapPin, MessageSquareText, Phone, UserRoundCheck, XCircle } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
+import { StatusBadge } from '@/components/admin/StatusBadge';
 import { assignTechnician, updateBookingStatus } from '@/features/bookings/actions';
 import { getBookingByOrderId } from '@/features/bookings/queries';
 import { getTechnicians } from '@/features/technicians/queries';
@@ -10,28 +13,92 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   const [booking, technicians] = await Promise.all([getBookingByOrderId(id), getTechnicians()]);
 
   return (
-    <AdminShell>
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
-        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Booking</p>
-          <h2 className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{booking.order_id}</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+    <AdminShell title={booking.order_id} eyebrow="Booking detail" description="Confirm the customer request, assign a technician, and keep the service status accurate.">
+      <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-3 border-b border-slate-200 p-6 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Customer order</p>
+              <h2 className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{booking.order_id}</h2>
+            </div>
+            <StatusBadge status={booking.status} />
+          </div>
+
+          <div className="grid gap-4 p-6 md:grid-cols-2">
             <Info label="Customer" value={booking.customer_name} />
-            <Info label="Phone" value={booking.customer_phone} />
+            <Info
+              label="Phone"
+              value={
+                <Link href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 text-[#0B2A4A] hover:text-[#2EA9D6]">
+                  <Phone className="size-4" aria-hidden="true" />
+                  {booking.customer_phone}
+                </Link>
+              }
+            />
             <Info label="Service" value={booking.services?.title || booking.service_id || 'General Inquiry'} />
-            <Info label="Address" value={booking.address} />
-            <Info label="Preferred Time" value={`${booking.preferred_date} / ${booking.preferred_time}`} />
-            <Info label="Status" value={booking.status.replaceAll('_', ' ')} />
+            <Info
+              label="Preferred time"
+              value={
+                <span className="inline-flex items-center gap-2">
+                  <CalendarClock className="size-4 text-[#2EA9D6]" aria-hidden="true" />
+                  {formatDate(booking.preferred_date)} / {booking.preferred_time}
+                </span>
+              }
+            />
+            <Info
+              label="Address"
+              value={
+                <span className="inline-flex items-start gap-2">
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-[#2EA9D6]" aria-hidden="true" />
+                  {booking.address}
+                </span>
+              }
+            />
+            <Info
+              label="Final price"
+              value={
+                <span className="inline-flex items-center gap-2">
+                  <BadgeDollarSign className="size-4 text-[#2EA9D6]" aria-hidden="true" />
+                  {booking.final_price ? `BDT ${booking.final_price}` : 'Not set yet'}
+                </span>
+              }
+            />
+          </div>
+
+          <div className="border-t border-slate-100 p-6">
+            <div className="rounded-lg bg-slate-50 p-4">
+              <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+                <MessageSquareText className="size-4" aria-hidden="true" />
+                Customer notes
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{booking.notes || 'No customer notes were added.'}</p>
+            </div>
           </div>
         </section>
-        <aside className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-          <h3 className="font-extrabold text-[#0B2A4A]">Admin Actions</h3>
-          <form action={async () => { 'use server'; await updateBookingStatus(booking.id, 'confirmed'); }} className="mt-4">
-            <button className="w-full rounded-xl bg-[#2EA9D6] py-3 text-sm font-bold text-white">Confirm Booking</button>
+
+        <aside className="h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+          <h3 className="text-lg font-extrabold text-[#0B2A4A]">Dispatch actions</h3>
+          <p className="mt-1 text-sm font-medium text-slate-500">Use this panel after calling the customer.</p>
+
+          <form
+            action={async () => {
+              'use server';
+              await updateBookingStatus(booking.id, 'confirmed');
+            }}
+            className="mt-5"
+          >
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]">
+              <CheckCircle2 className="size-4" aria-hidden="true" />
+              Confirm booking
+            </button>
           </form>
-          <form action={assignTechnician} className="mt-3 space-y-3 rounded-xl bg-gray-50 p-3">
+
+          <form action={assignTechnician} className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
             <input type="hidden" name="bookingId" value={booking.id} />
-            <select name="technicianId" required className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm font-bold text-[#0B2A4A]">
+            <label className="text-xs font-bold uppercase tracking-widest text-slate-400" htmlFor="technicianId">
+              Assign technician
+            </label>
+            <select id="technicianId" name="technicianId" required className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
               <option value="">Select technician</option>
               {technicians.map((technician) => (
                 <option key={technician.id} value={technician.id}>
@@ -39,10 +106,23 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
                 </option>
               ))}
             </select>
-            <button className="w-full rounded-xl bg-[#0B2A4A] py-3 text-sm font-bold text-white">Assign Technician</button>
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#123B64]">
+              <UserRoundCheck className="size-4" aria-hidden="true" />
+              Assign technician
+            </button>
           </form>
-          <form action={async () => { 'use server'; await updateBookingStatus(booking.id, 'cancelled'); }} className="mt-3">
-            <button className="w-full rounded-xl border border-gray-200 py-3 text-sm font-bold text-gray-600">Cancel Booking</button>
+
+          <form
+            action={async () => {
+              'use server';
+              await updateBookingStatus(booking.id, 'cancelled');
+            }}
+            className="mt-3"
+          >
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 transition hover:border-rose-200 hover:text-rose-600">
+              <XCircle className="size-4" aria-hidden="true" />
+              Cancel booking
+            </button>
           </form>
         </aside>
       </div>
@@ -50,11 +130,15 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-xl bg-gray-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-widest text-gray-400">{label}</p>
-      <p className="mt-1 font-bold text-[#0B2A4A]">{value}</p>
+    <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+      <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
+      <div className="mt-2 font-bold text-[#0B2A4A]">{value}</div>
     </div>
   );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
 }
