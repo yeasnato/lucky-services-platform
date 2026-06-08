@@ -1,5 +1,6 @@
 import { Calendar, ClipboardPlus, Clock, FileText, MapPin, Phone, User } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
+import { SubmitButton } from '@/components/admin/SubmitButton';
 import { createAdminBooking } from '@/features/bookings/actions';
 import { getServicesForSelect } from '@/features/bookings/queries';
 import { requireRole } from '@/lib/auth/session';
@@ -18,7 +19,7 @@ export default async function NewAdminBookingPage() {
             <ClipboardPlus className="size-5 text-[#2EA9D6]" aria-hidden="true" />
             Manual booking
           </h2>
-          <p className="mt-1 text-sm font-medium text-slate-500">This creates a pending order in the admin booking queue.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Phone and admin orders are created as confirmed, so you can assign a technician immediately.</p>
         </div>
 
         <form action={createAdminBooking} className="grid gap-5 p-5 md:grid-cols-2">
@@ -83,10 +84,14 @@ export default async function NewAdminBookingPage() {
           </label>
 
           <div className="md:col-span-2">
-            <button className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto">
+            <SubmitButton
+              pendingLabel="Creating order..."
+              className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto"
+            >
               <ClipboardPlus className="size-4" aria-hidden="true" />
-              Create pending order
-            </button>
+              Create confirmed order
+            </SubmitButton>
+            <p className="mt-2 text-xs font-semibold text-slate-400">The button locks while saving to prevent duplicate orders.</p>
           </div>
         </form>
       </section>

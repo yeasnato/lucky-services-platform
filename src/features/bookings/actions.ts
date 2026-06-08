@@ -110,6 +110,8 @@ export async function createAdminBooking(formData: FormData) {
   }
 
   const orderId = createOrderId();
+  const initialStatus = parsed.data.source === 'website' ? 'pending' : 'confirmed';
+  const now = new Date().toISOString();
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
@@ -122,8 +124,9 @@ export async function createAdminBooking(formData: FormData) {
       preferred_date: parsed.data.preferredDate,
       preferred_time: parsed.data.preferredTime,
       notes: parsed.data.notes || null,
-      status: 'pending',
-      source: parsed.data.source
+      status: initialStatus,
+      source: parsed.data.source,
+      ...(initialStatus === 'confirmed' ? { confirmed_at: now } : {})
     })
     .select('id')
     .single();
@@ -134,11 +137,11 @@ export async function createAdminBooking(formData: FormData) {
     booking_id: data.id,
     actor_id: profile.id,
     event_type: 'created',
-    to_status: 'pending',
-    note: `Booking created from ${parsed.data.source}.`
+    to_status: initialStatus,
+    note: `Booking created from ${parsed.data.source}${initialStatus === 'confirmed' ? ' and marked confirmed.' : '.'}`
   });
 
   revalidatePath('/admin/bookings');
   revalidatePath('/admin/dashboard');
-  redirect(`/admin/bookings/${orderId}`);
+  redirect(`/admin/bookings/${orderId}?created=1`);
 }
