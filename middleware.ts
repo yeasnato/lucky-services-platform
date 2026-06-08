@@ -38,6 +38,30 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  const { data: profile } = await supabase.from('profiles').select('role, status').eq('id', user.id).single();
+  const path = request.nextUrl.pathname;
+
+  if (!profile || profile.status !== 'active') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/login';
+    url.searchParams.delete('next');
+    return NextResponse.redirect(url);
+  }
+
+  if (path.startsWith('/admin') && profile.role !== 'admin') {
+    const url = request.nextUrl.clone();
+    url.pathname = profile.role === 'technician' ? '/technician/dashboard' : '/';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
+  if (path.startsWith('/technician') && profile.role !== 'technician' && profile.role !== 'admin') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    url.search = '';
+    return NextResponse.redirect(url);
+  }
+
   return response;
 }
 

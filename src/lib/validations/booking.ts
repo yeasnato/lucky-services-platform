@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const bookingRequestSchema = z.object({
   customerName: z.string().min(2, 'Name is required').max(80),
-  customerPhone: z.string().min(8, 'Phone number is required').max(20),
+  customerPhone: z.string().min(8, 'Phone number is required').max(20).regex(/^(?:\+?88)?01[3-9]\d{8}$/, 'Enter a valid Bangladesh phone number'),
   address: z.string().min(8, 'Address is required').max(300),
   serviceId: z.string().optional(),
   preferredDate: z.string().min(1, 'Date is required'),
@@ -12,3 +12,9 @@ export const bookingRequestSchema = z.object({
 });
 
 export type BookingRequestInput = z.infer<typeof bookingRequestSchema>;
+
+export const adminBookingCreateSchema = bookingRequestSchema.extend({
+  source: z.enum(['admin', 'phone', 'website']).default('admin')
+});
+
+export type AdminBookingCreateInput = z.infer<typeof adminBookingCreateSchema>;

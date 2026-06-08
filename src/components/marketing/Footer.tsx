@@ -40,8 +40,8 @@ export function Footer() {
             <ul className="space-y-3 text-sm font-medium text-gray-400">
               <li><Link href="/">About Us</Link></li>
               <li><Link href="/#services-section">All Services</Link></li>
-              <li><Link href="/admin/dashboard">Admin Dashboard</Link></li>
-              <li><Link href="/technician/dashboard">Technician Dashboard</Link></li>
+              <li><Link href="/booking">Book Service</Link></li>
+              <li><Link href="/contact">Contact Support</Link></li>
             </ul>
           </div>
 

@@ -28,7 +28,11 @@ export function LoginForm() {
       return;
     }
 
-    router.push(searchParams.get('next') || '/admin/dashboard');
+    const { data: profile } = await supabase.from('profiles').select('role').single();
+    const next = searchParams.get('next');
+    const fallbackPath = profile?.role === 'technician' ? '/technician/dashboard' : '/admin/dashboard';
+
+    router.push(next || fallbackPath);
     router.refresh();
   }
 

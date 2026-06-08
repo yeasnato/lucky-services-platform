@@ -1,5 +1,6 @@
 import { hasSupabaseConfig } from '@/lib/supabase/config';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { services } from '@/data/services';
 
 export interface BookingRow {
   id: string;
@@ -20,6 +21,25 @@ export interface BookingRow {
   assigned_at?: string | null;
   services?: {
     title: string;
+  } | null;
+  technician_profiles?: {
+    display_name: string;
+    phone: string;
+  } | null;
+}
+
+export interface BookingEventRow {
+  id: string;
+  booking_id: string;
+  actor_id: string | null;
+  event_type: string;
+  from_status: string | null;
+  to_status: string | null;
+  note: string | null;
+  created_at: string;
+  profiles?: {
+    full_name: string;
+    role: string;
   } | null;
 }
 
@@ -77,7 +97,7 @@ export async function getAdminBookings() {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, services(title)')
+    .select('*, services(title), technician_profiles(display_name, phone)')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -93,7 +113,7 @@ export async function getBookingByOrderId(orderId: string) {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('bookings')
-    .select('*, services(title)')
+    .select('*, services(title), technician_profiles(display_name, phone)')
     .or(`order_id.eq.${orderId},id.eq.${orderId}`)
     .single();
 
@@ -127,4 +147,48 @@ export async function getDashboardStats() {
     completed: bookings.filter((booking) => booking.status === 'completed').length,
     total: bookings.length
   };
+}
+
+export async function getBookingEvents(bookingId: string) {
+  if (!hasSupabaseConfig()) {
+    return [
+      {
+        id: 'mock-event-1',
+        booking_id: bookingId,
+        actor_id: null,
+        event_type: 'created',
+        from_status: null,
+        to_status: 'pending',
+        note: 'Booking created from website.',
+        created_at: new Date().toISOString(),
+        profiles: null
+      }
+    ] satisfies BookingEventRow[];
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('booking_events')
+    .select('*, profiles(full_name, role)')
+    .eq('booking_id', bookingId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return (data || []) as BookingEventRow[];
+}
+
+export async function getServicesForSelect() {
+  if (!hasSupabaseConfig()) {
+    return services.map((service) => ({ id: service.id, title: service.title }));
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('services')
+    .select('id, title')
+    .eq('is_active', true)
+    .order('title', { ascending: true });
+
+  if (error) throw error;
+  return data || [];
 }

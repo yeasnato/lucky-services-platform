@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { requireRole } from '@/lib/auth/session';
@@ -12,6 +13,15 @@ export default async function AdminBookingsPage() {
     <AdminShell
       title="Booking queue"
       description="Confirm customer requests, assign technicians, and track every order through the service lifecycle."
+      actions={
+        <Link
+          href="/admin/bookings/new"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+        >
+          <Plus className="size-4" aria-hidden="true" />
+          New order
+        </Link>
+      }
     >
       <div className="rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">

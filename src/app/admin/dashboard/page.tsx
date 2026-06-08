@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Clock3, ClipboardList, UserRoundCheck } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Clock3, ClipboardList, Plus, UserRoundCheck } from 'lucide-react';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { requireRole } from '@/lib/auth/session';
@@ -49,13 +49,22 @@ export default async function AdminDashboardPage() {
       title="Operations dashboard"
       description="Review new bookings, confirm customer requests, and assign the right technician from one focused workspace."
       actions={
-        <Link
-          href="/admin/bookings"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
-        >
-          Booking queue
-          <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        <>
+          <Link
+            href="/admin/bookings/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            New order
+          </Link>
+          <Link
+            href="/admin/bookings"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]"
+          >
+            Booking queue
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </>
       }
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
