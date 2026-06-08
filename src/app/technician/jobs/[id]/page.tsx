@@ -1,9 +1,9 @@
 import Link from 'next/link';
-import { BadgeDollarSign, CalendarClock, CheckCircle2, MapPin, MessageSquareText, Phone, Route, Wrench } from 'lucide-react';
+import { BadgeDollarSign, CalendarClock, CalendarDays, CheckCircle2, MapPin, MessageSquareText, NotebookPen, Phone, Route, Wrench } from 'lucide-react';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { completeTechnicianJob, updateBookingStatus } from '@/features/bookings/actions';
+import { addTechnicianJobNote, completeTechnicianJob, rescheduleTechnicianJob, updateBookingStatus } from '@/features/bookings/actions';
 import { getTechnicianBookingByOrderId } from '@/features/bookings/queries';
 import { getAllowedStatusTransitions } from '@/features/bookings/status-machine';
 import { requireRole } from '@/lib/auth/session';
@@ -30,6 +30,7 @@ export default async function TechnicianJobPage({ params }: { params: Promise<{ 
   }
 
   const allowedActions = getAllowedStatusTransitions(job.status, 'technician');
+  const canUpdateJob = !['completed', 'cancelled'].includes(job.status);
 
   return (
     <TechnicianShell>
@@ -146,7 +147,11 @@ export default async function TechnicianJobPage({ params }: { params: Promise<{ 
                   className="w-full rounded-lg border border-emerald-200 bg-white px-3 py-2 text-sm font-semibold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]"
                 />
               </label>
-              <SubmitButton pendingLabel="Completing..." className="w-full rounded-lg bg-[#25D366] px-4 py-3 text-sm font-bold text-white">
+              <SubmitButton
+                pendingLabel="Completing..."
+                confirmMessage="Mark this job as completed? This action cannot be undone."
+                className="w-full rounded-lg bg-[#25D366] px-4 py-3 text-sm font-bold text-white"
+              >
                 Complete Job
               </SubmitButton>
             </form>
@@ -156,6 +161,104 @@ export default async function TechnicianJobPage({ params }: { params: Promise<{ 
           ) : null}
         </aside>
       </div>
+
+      {canUpdateJob ? (
+        <section className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-lg border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">
+                <CalendarDays className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-[#0B2A4A]">Reschedule visit</h2>
+                <p className="text-sm font-medium text-gray-500">Use when customer requests a different time or visit must move.</p>
+              </div>
+            </div>
+            <form action={rescheduleTechnicianJob} className="mt-5 grid gap-4 sm:grid-cols-2">
+              <input type="hidden" name="bookingId" value={job.id} />
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400">New date</span>
+                <input
+                  name="preferredDate"
+                  type="date"
+                  required
+                  defaultValue={job.preferred_date}
+                  className="min-h-[46px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:bg-white"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400">New time</span>
+                <input
+                  name="preferredTime"
+                  required
+                  defaultValue={job.preferred_time}
+                  placeholder="Morning, afternoon, 3 PM"
+                  className="min-h-[46px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:bg-white"
+                />
+              </label>
+              <label className="block sm:col-span-2">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400">Reason</span>
+                <textarea
+                  name="rescheduleNote"
+                  required
+                  rows={3}
+                  placeholder="Customer requested evening, traffic delay, parts needed, customer not home..."
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:bg-white"
+                />
+              </label>
+              <div className="sm:col-span-2">
+                <SubmitButton pendingLabel="Saving schedule..." className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white sm:w-auto">
+                  <CalendarDays className="size-4" aria-hidden="true" />
+                  Save schedule
+                </SubmitButton>
+              </div>
+            </form>
+          </div>
+
+          <div className="rounded-lg border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">
+                <NotebookPen className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h2 className="font-extrabold text-[#0B2A4A]">Add field note</h2>
+                <p className="text-sm font-medium text-gray-500">Log call attempts, customer issues, parts needs, or visit updates.</p>
+              </div>
+            </div>
+            <form action={addTechnicianJobNote} className="mt-5 space-y-4">
+              <input type="hidden" name="bookingId" value={job.id} />
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400">Note type</span>
+                <select
+                  name="noteType"
+                  defaultValue="field_note"
+                  className="min-h-[46px] w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:bg-white"
+                >
+                  <option value="field_note">Field note</option>
+                  <option value="customer_not_reachable">Customer not reachable</option>
+                  <option value="customer_requested_change">Customer requested change</option>
+                  <option value="parts_required">Parts required</option>
+                  <option value="extra_work_found">Extra work found</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-400">Note</span>
+                <textarea
+                  name="technicianNote"
+                  required
+                  rows={4}
+                  placeholder="Called customer 3 times, phone off. Waiting for admin follow-up..."
+                  className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:bg-white"
+                />
+              </label>
+              <SubmitButton pendingLabel="Adding note..." className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white sm:w-auto">
+                <NotebookPen className="size-4" aria-hidden="true" />
+                Add note
+              </SubmitButton>
+            </form>
+          </div>
+        </section>
+      ) : null}
     </TechnicianShell>
   );
 }

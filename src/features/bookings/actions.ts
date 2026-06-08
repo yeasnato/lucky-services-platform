@@ -46,12 +46,7 @@ export async function updateBookingStatus(bookingId: string, status: string) {
     note: `Status changed to ${status}.`
   });
 
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${booking.order_id}`);
-  revalidatePath('/admin/dashboard');
-  revalidatePath('/technician/dashboard');
-  revalidatePath('/technician/jobs');
-  revalidatePath(`/technician/jobs/${booking.order_id}`);
+  revalidateBookingSurfaces(booking.order_id, booking.assigned_technician_id);
 }
 
 export async function completeTechnicianJob(formData: FormData) {
@@ -111,14 +106,115 @@ export async function completeTechnicianJob(formData: FormData) {
     note: `Job completed. Final price: ${resolvedFinalPrice ? `BDT ${resolvedFinalPrice}` : 'not set'}. ${completionNote}`
   });
 
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${booking.order_id}`);
-  revalidatePath('/admin/dashboard');
-  revalidatePath('/admin/technicians');
-  revalidatePath(`/admin/technicians/${profile.id}`);
-  revalidatePath('/technician/dashboard');
-  revalidatePath('/technician/jobs');
-  revalidatePath(`/technician/jobs/${booking.order_id}`);
+  revalidateBookingSurfaces(booking.order_id, profile.id);
+}
+
+export async function rescheduleTechnicianJob(formData: FormData) {
+  const profile = await requireRole(['technician']);
+  const bookingId = String(formData.get('bookingId') || '');
+  const preferredDate = String(formData.get('preferredDate') || '').trim();
+  const preferredTime = String(formData.get('preferredTime') || '').trim();
+  const rescheduleNote = String(formData.get('rescheduleNote') || '').trim();
+
+  if (!bookingId || !preferredDate || !preferredTime) {
+    throw new Error('Booking, date, and time are required.');
+  }
+
+  if (!rescheduleNote) {
+    throw new Error('A reschedule reason is required.');
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('status, order_id, assigned_technician_id, preferred_date, preferred_time, notes')
+    .eq('id', bookingId)
+    .single();
+
+  if (bookingError) throw bookingError;
+  if (booking.assigned_technician_id !== profile.id) {
+    throw new Error('This job is not assigned to your technician profile.');
+  }
+  if (['completed', 'cancelled'].includes(booking.status)) {
+    throw new Error('Completed or cancelled jobs cannot be rescheduled.');
+  }
+
+  const noteLine = `Technician reschedule note: ${booking.preferred_date} / ${booking.preferred_time} moved to ${preferredDate} / ${preferredTime}. Reason: ${rescheduleNote}`;
+  const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      preferred_date: preferredDate,
+      preferred_time: preferredTime,
+      notes: updatedNotes,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', bookingId);
+
+  if (error) throw error;
+
+  await supabase.from('booking_events').insert({
+    booking_id: bookingId,
+    actor_id: profile.id,
+    event_type: 'rescheduled',
+    from_status: booking.status,
+    to_status: booking.status,
+    note: noteLine
+  });
+
+  revalidateBookingSurfaces(booking.order_id, profile.id);
+}
+
+export async function addTechnicianJobNote(formData: FormData) {
+  const profile = await requireRole(['technician']);
+  const bookingId = String(formData.get('bookingId') || '');
+  const noteType = String(formData.get('noteType') || 'field_note').trim();
+  const note = String(formData.get('technicianNote') || '').trim();
+
+  if (!bookingId || !note) {
+    throw new Error('Booking and note are required.');
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data: booking, error: bookingError } = await supabase
+    .from('bookings')
+    .select('status, order_id, assigned_technician_id, notes')
+    .eq('id', bookingId)
+    .single();
+
+  if (bookingError) throw bookingError;
+  if (booking.assigned_technician_id !== profile.id) {
+    throw new Error('This job is not assigned to your technician profile.');
+  }
+  if (['completed', 'cancelled'].includes(booking.status)) {
+    throw new Error('Completed or cancelled jobs cannot be updated.');
+  }
+
+  const readableType = noteType.replaceAll('_', ' ');
+  const noteLine = `Technician ${readableType}: ${note}`;
+  const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
+
+  const { error } = await supabase
+    .from('bookings')
+    .update({
+      notes: updatedNotes,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', bookingId);
+
+  if (error) throw error;
+
+  await supabase.from('booking_events').insert({
+    booking_id: bookingId,
+    actor_id: profile.id,
+    event_type: 'technician_note',
+    from_status: booking.status,
+    to_status: booking.status,
+    note: noteLine
+  });
+
+  revalidateBookingSurfaces(booking.order_id, profile.id);
 }
 
 export async function assignTechnician(formData: FormData) {
@@ -159,12 +255,7 @@ export async function assignTechnician(formData: FormData) {
     note: `Technician assigned: ${technicianId}.`
   });
 
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${booking.order_id}`);
-  revalidatePath('/admin/dashboard');
-  revalidatePath('/technician/dashboard');
-  revalidatePath('/technician/jobs');
-  revalidatePath(`/technician/jobs/${booking.order_id}`);
+  revalidateBookingSurfaces(booking.order_id, technicianId);
 }
 
 export async function createAdminBooking(formData: FormData) {
@@ -274,9 +365,7 @@ export async function updateBookingFields(formData: FormData) {
     note: 'Booking details updated.'
   });
 
-  revalidatePath('/admin/bookings');
-  revalidatePath(`/admin/bookings/${booking.order_id}`);
-  revalidatePath('/admin/dashboard');
+  revalidateBookingSurfaces(booking.order_id);
 }
 
 export async function deleteBooking(formData: FormData) {
@@ -299,4 +388,15 @@ export async function deleteBooking(formData: FormData) {
   revalidatePath('/admin/bookings');
   revalidatePath('/admin/dashboard');
   redirect('/admin/bookings?deleted=1');
+}
+
+function revalidateBookingSurfaces(orderId: string, technicianId?: string | null) {
+  revalidatePath('/admin/bookings');
+  revalidatePath(`/admin/bookings/${orderId}`);
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/technicians');
+  if (technicianId) revalidatePath(`/admin/technicians/${technicianId}`);
+  revalidatePath('/technician/dashboard');
+  revalidatePath('/technician/jobs');
+  revalidatePath(`/technician/jobs/${orderId}`);
 }
