@@ -18,7 +18,7 @@ export function TechnicianNav({ variant = 'bottom' }: { variant?: 'top' | 'botto
 
   if (variant === 'top') {
     return (
-      <nav className="hidden items-center gap-1 rounded-lg border border-sky-100 bg-[#F7FBFD] p-1 text-sm font-bold lg:flex">
+      <nav className="hidden items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 text-sm font-semibold lg:flex">
         {navItems.map((item) => {
           const active = isActive(item.href, pathname, currentView);
           const Icon = item.icon;
@@ -27,7 +27,7 @@ export function TechnicianNav({ variant = 'bottom' }: { variant?: 'top' | 'botto
             <Link
               key={item.href}
               href={item.href}
-              className={`inline-flex min-h-[42px] items-center gap-2 rounded-md px-3 text-sm transition ${
+              className={`inline-flex min-h-[40px] items-center gap-2 rounded-md px-3 text-sm transition ${
                 active ? 'bg-white text-[#0B2A4A] shadow-sm' : 'text-slate-500 hover:bg-white hover:text-[#0B2A4A]'
               }`}
             >
@@ -41,7 +41,7 @@ export function TechnicianNav({ variant = 'bottom' }: { variant?: 'top' | 'botto
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-sky-100 bg-white/95 px-3 py-2 shadow-[0_-10px_30px_rgba(11,42,74,0.08)] backdrop-blur lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-3 py-2 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] backdrop-blur lg:hidden">
       <div className="mx-auto grid max-w-xl grid-cols-4 gap-1">
         {navItems.map((item) => {
           const active = isActive(item.href, pathname, currentView);
@@ -51,7 +51,7 @@ export function TechnicianNav({ variant = 'bottom' }: { variant?: 'top' | 'botto
             <Link
               key={item.href}
               href={item.href}
-              className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-extrabold transition ${
+              className={`flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-lg text-[11px] font-bold transition ${
                 active ? 'bg-[#EAF8FD] text-[#0B2A4A]' : 'text-slate-500 hover:bg-slate-50'
               }`}
             >

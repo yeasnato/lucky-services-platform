@@ -16,16 +16,14 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
 
   return (
     <TechnicianShell>
-      <section className="rounded-lg border border-sky-100 bg-white p-5 shadow-sm">
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
         <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Job list</p>
         <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#0B2A4A]">Assigned work orders</h1>
-            <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
-              Use active jobs for field work, today for immediate schedule, and done for completed history.
-            </p>
+            <h1 className="text-2xl font-bold text-[#0B2A4A]">Assigned work orders</h1>
+            <p className="mt-1 text-sm font-medium leading-6 text-slate-500">Filter your active work, today schedule, and completed jobs.</p>
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-lg bg-[#F3F8FC] p-1 text-sm font-extrabold">
+          <div className="grid grid-cols-3 gap-1 rounded-lg border border-slate-200 bg-slate-50 p-1 text-sm font-semibold">
             <Tab href="/technician/jobs" active={view === 'active'} icon={<ListChecks className="size-4" />} label="Active" count={activeJobs.length} />
             <Tab href="/technician/jobs?view=today" active={view === 'today'} icon={<CalendarDays className="size-4" />} label="Today" count={todayJobs.length} />
             <Tab href="/technician/jobs?view=completed" active={view === 'completed'} icon={<CheckCircle2 className="size-4" />} label="Done" count={completedJobs.length} />
@@ -38,10 +36,10 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
           <TechnicianJobCard key={job.id} job={job} />
         ))}
         {visibleJobs.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-sky-100 bg-white p-8 text-center">
-            <CheckCircle2 className="mx-auto size-10 text-emerald-500" aria-hidden="true" />
-            <h2 className="mt-3 text-xl font-extrabold text-[#0B2A4A]">No jobs in this view</h2>
-            <p className="mt-1 text-sm font-semibold text-slate-500">When admin assigns or completes work, it will appear here.</p>
+          <div className="rounded-lg border border-dashed border-slate-200 bg-white p-8 text-center">
+            <CheckCircle2 className="mx-auto size-9 text-emerald-500" aria-hidden="true" />
+            <h2 className="mt-3 text-lg font-bold text-[#0B2A4A]">No jobs in this view</h2>
+            <p className="mt-1 text-sm font-medium text-slate-500">When admin assigns or completes work, it will appear here.</p>
           </div>
         ) : null}
       </section>
@@ -71,7 +69,7 @@ function Tab({
     >
       <span className={active ? 'text-[#2EA9D6]' : 'text-slate-400'}>{icon}</span>
       <span>{label}</span>
-      <span className="rounded-full bg-[#EAF8FD] px-2 py-0.5 text-[11px] text-[#0B2A4A]">{count}</span>
+      <span className="rounded-full bg-[#EAF8FD] px-2 py-0.5 text-[11px] font-bold text-[#0B2A4A]">{count}</span>
     </Link>
   );
 }

@@ -18,15 +18,15 @@ export default async function TechnicianProfilePage() {
 
   return (
     <TechnicianShell>
-      <section className="rounded-lg border border-sky-100 bg-white p-5 shadow-sm">
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-          <div className="flex size-24 shrink-0 items-center justify-center rounded-full border-4 border-[#EAF8FD] bg-[#0B2A4A] text-3xl font-extrabold text-white">
+          <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[#EAF8FD] text-2xl font-bold text-[#0B2A4A]">
             {getInitials(displayName)}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Technician profile</p>
-            <h1 className="mt-1 text-3xl font-extrabold text-[#0B2A4A]">{displayName}</h1>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-slate-600">
+            <h1 className="mt-1 text-2xl font-bold text-[#0B2A4A]">{displayName}</h1>
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
               <span className="inline-flex items-center gap-1 rounded-md bg-[#EAF8FD] px-2 py-1 text-[#0B2A4A]">
                 <ShieldCheck className="size-4 text-[#2EA9D6]" aria-hidden="true" />
                 Technician
@@ -77,10 +77,10 @@ export default async function TechnicianProfilePage() {
         </Panel>
       </section>
 
-      <section className="mt-5 rounded-lg border border-sky-100 bg-white p-5 shadow-sm">
+      <section className="mt-5 rounded-lg border border-slate-200 bg-white p-5">
         <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Field guidance</p>
-        <h2 className="mt-1 text-xl font-extrabold text-[#0B2A4A]">Keep every visit easy to dispatch</h2>
-        <div className="mt-4 grid gap-3 text-sm font-semibold leading-6 text-slate-600 lg:grid-cols-3">
+        <h2 className="mt-1 text-xl font-bold text-[#0B2A4A]">Keep every visit easy to dispatch</h2>
+        <div className="mt-4 grid gap-3 text-sm font-medium leading-6 text-slate-600 lg:grid-cols-3">
           <Guidance text="Call customer before moving and use map route from the job screen." />
           <Guidance text="If schedule changes, update the new date/time with a clear reason." />
           <Guidance text="Before completing, confirm final price and add the work completion note." />
@@ -92,12 +92,12 @@ export default async function TechnicianProfilePage() {
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-sky-100 bg-white p-4 shadow-sm">
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="flex items-center gap-3">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#EAF8FD] text-[#2EA9D6]">{icon}</div>
         <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
-          <p className="mt-1 truncate text-lg font-extrabold text-[#0B2A4A]">{value}</p>
+          <p className="mt-1 truncate text-lg font-bold text-[#0B2A4A]">{value}</p>
         </div>
       </div>
     </div>
@@ -106,8 +106,8 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
 
 function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-sky-100 bg-white p-5 shadow-sm">
-      <h2 className="inline-flex items-center gap-2 text-lg font-extrabold text-[#0B2A4A]">
+    <section className="rounded-lg border border-slate-200 bg-white p-5">
+      <h2 className="inline-flex items-center gap-2 text-lg font-bold text-[#0B2A4A]">
         <span className="text-[#2EA9D6]">{icon}</span>
         {title}
       </h2>
@@ -117,16 +117,16 @@ function Panel({ title, icon, children }: { title: string; icon: React.ReactNode
 }
 
 function Chip({ label }: { label: string }) {
-  return <span className="rounded-full bg-[#EAF8FD] px-3 py-2 text-sm font-bold text-[#0B2A4A]">{label}</span>;
+  return <span className="rounded-full bg-[#EAF8FD] px-3 py-2 text-sm font-semibold text-[#0B2A4A]">{label}</span>;
 }
 
 function EmptyLine({ text }: { text: string }) {
-  return <p className="rounded-lg border border-dashed border-sky-100 bg-[#F7FCFE] p-4 text-sm font-semibold text-slate-500">{text}</p>;
+  return <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-500">{text}</p>;
 }
 
 function Guidance({ text }: { text: string }) {
   return (
-    <div className="rounded-lg bg-[#F7FCFE] p-4">
+    <div className="rounded-lg bg-slate-50 p-4">
       <CheckCircle2 className="mb-2 size-5 text-[#2EA9D6]" aria-hidden="true" />
       {text}
     </div>
