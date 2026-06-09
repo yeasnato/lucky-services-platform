@@ -14,7 +14,8 @@ export const bookingRequestSchema = z.object({
 export type BookingRequestInput = z.infer<typeof bookingRequestSchema>;
 
 export const adminBookingCreateSchema = bookingRequestSchema.extend({
-  source: z.enum(['admin', 'phone', 'website']).default('admin')
+  source: z.enum(['admin', 'phone', 'website']).default('admin'),
+  createStatus: z.enum(['pending', 'confirmed']).default('pending')
 });
 
 export type AdminBookingCreateInput = z.infer<typeof adminBookingCreateSchema>;

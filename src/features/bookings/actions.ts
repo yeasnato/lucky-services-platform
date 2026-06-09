@@ -268,7 +268,8 @@ export async function createAdminBooking(formData: FormData) {
     preferredDate: String(formData.get('preferredDate') || ''),
     preferredTime: String(formData.get('preferredTime') || ''),
     notes: String(formData.get('notes') || ''),
-    source: String(formData.get('source') || 'admin')
+    source: String(formData.get('source') || 'admin'),
+    createStatus: String(formData.get('createStatus') || 'pending')
   });
 
   if (!parsed.success) {
@@ -288,8 +289,9 @@ export async function createAdminBooking(formData: FormData) {
       preferred_date: parsed.data.preferredDate,
       preferred_time: parsed.data.preferredTime,
       notes: parsed.data.notes || null,
-      status: 'pending',
-      source: parsed.data.source
+      status: parsed.data.createStatus,
+      source: parsed.data.source,
+      ...(parsed.data.createStatus === 'confirmed' ? { confirmed_at: new Date().toISOString() } : {})
     })
     .select('id')
     .single();
@@ -300,8 +302,8 @@ export async function createAdminBooking(formData: FormData) {
     booking_id: data.id,
     actor_id: profile.id,
     event_type: 'created',
-    to_status: 'pending',
-    note: `Booking created from ${parsed.data.source}.`
+    to_status: parsed.data.createStatus,
+    note: `Booking created from ${parsed.data.source} as ${parsed.data.createStatus}.`
   });
 
   revalidatePath('/admin/bookings');

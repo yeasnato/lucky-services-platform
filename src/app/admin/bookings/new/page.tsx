@@ -19,7 +19,7 @@ export default async function NewAdminBookingPage() {
             <ClipboardPlus className="size-5 text-[#2EA9D6]" aria-hidden="true" />
             Manual booking
           </h2>
-          <p className="mt-1 text-sm font-medium text-slate-500">Every order is created as pending. Confirm it first, then assign a technician.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Create phone and walk-in orders as pending, or mark confirmed when the customer already confirmed during the call.</p>
         </div>
 
         <form action={createAdminBooking} className="grid gap-5 p-5 md:grid-cols-2">
@@ -60,6 +60,14 @@ export default async function NewAdminBookingPage() {
             </select>
           </label>
 
+          <label className="block">
+            <span className="mb-2 block text-sm font-bold text-slate-600">Create status</span>
+            <select name="createStatus" defaultValue="pending" className="min-h-[50px] w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
+              <option value="pending">Pending confirmation</option>
+              <option value="confirmed">Confirmed by customer</option>
+            </select>
+          </label>
+
           <Field icon={<Calendar size={18} />} name="preferredDate" required type="date" min={new Date().toISOString().split('T')[0]} />
 
           <label className="relative block">
@@ -89,7 +97,7 @@ export default async function NewAdminBookingPage() {
               className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto"
             >
               <ClipboardPlus className="size-4" aria-hidden="true" />
-              Create pending order
+              Create order
             </SubmitButton>
             <p className="mt-2 text-xs font-semibold text-slate-400">The button locks while saving to prevent duplicate orders.</p>
           </div>

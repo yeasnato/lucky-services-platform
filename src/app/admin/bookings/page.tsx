@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { ArrowRight, Filter, MapPin, Phone, Plus, Search } from 'lucide-react';
+import { AutoRefreshNotice } from '@/components/admin/AutoRefreshNotice';
 import { BookingQuickAction, getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
-import { getAdminBookings } from '@/features/bookings/queries';
+import { getAdminBookings, getBookingQueueCounts } from '@/features/bookings/queries';
 import type { BookingRow } from '@/features/bookings/queries';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
@@ -14,9 +15,10 @@ type QueueSearchParams = {
   unassigned?: string;
   q?: string;
   action?: string;
+  page?: string;
 };
 
-const fieldStatuses = ['assigned', 'accepted', 'on_the_way', 'in_progress'];
+const pageSize = 50;
 
 export default async function AdminBookingsPage({
   searchParams
@@ -25,33 +27,38 @@ export default async function AdminBookingsPage({
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   await requireRole(['admin']);
-  const [bookings, technicians] = await Promise.all([getAdminBookings(), getTechnicians()]);
   const activeFilter = resolvedSearchParams.status || 'all';
   const query = (resolvedSearchParams.q || '').trim();
-  const filteredBookings = filterBookings(bookings, resolvedSearchParams);
-  const tabCounts = {
-    all: bookings.length,
-    pending: bookings.filter((booking) => booking.status === 'pending').length,
-    ready: bookings.filter((booking) => booking.status === 'confirmed' && !booking.assigned_technician_id).length,
-    field: bookings.filter((booking) => fieldStatuses.includes(booking.status)).length,
-    completed: bookings.filter((booking) => booking.status === 'completed').length,
-    cancelled: bookings.filter((booking) => booking.status === 'cancelled').length
-  };
+  const page = Math.max(1, Number(resolvedSearchParams.page || '1') || 1);
+  const unassigned = resolvedSearchParams.unassigned === '1';
+  const [bookings, tabCounts, activeCountBookings, technicians] = await Promise.all([
+    getAdminBookings({ page, pageSize, status: activeFilter, unassigned, query }),
+    getBookingQueueCounts(query),
+    getAdminBookings({ pageSize: 100, status: 'field' }),
+    getTechnicians()
+  ]);
   const activeCounts = getActiveBookingCounts(bookings);
-  const successHref = queueHref(activeFilter, query, resolvedSearchParams.unassigned === '1', 'updated');
+  const loadCounts = getActiveBookingCounts(activeCountBookings);
+  const mergedActiveCounts = new Map([...loadCounts, ...activeCounts]);
+  const totalFiltered = getCountForFilter(tabCounts, activeFilter, unassigned);
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / pageSize));
+  const successHref = queueHref(activeFilter, query, unassigned, 1, 'updated');
 
   return (
     <AdminShell
       title="Booking queue"
       description="Filter customer requests, confirm orders, assign technicians, and keep dispatch moving without unnecessary page hops."
       actions={
-        <Link
-          href="/admin/bookings/new"
-          className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
-        >
-          <Plus className="size-4" aria-hidden="true" />
-          New order
-        </Link>
+        <>
+          <Link
+            href="/admin/bookings/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            New order
+          </Link>
+          <AutoRefreshNotice latestBookingId={bookings[0]?.id} />
+        </>
       }
     >
       {resolvedSearchParams.deleted === '1' ? (
@@ -74,7 +81,7 @@ export default async function AdminBookingsPage({
             </div>
             <form action="/admin/bookings" className="flex flex-col gap-2 sm:flex-row">
               <input type="hidden" name="status" value={activeFilter} />
-              {resolvedSearchParams.unassigned ? <input type="hidden" name="unassigned" value={resolvedSearchParams.unassigned} /> : null}
+              {unassigned ? <input type="hidden" name="unassigned" value="1" /> : null}
               <label className="relative block min-w-0 sm:w-[320px]">
                 <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                 <input
@@ -98,7 +105,7 @@ export default async function AdminBookingsPage({
               label="Ready to assign"
               count={tabCounts.ready}
               href={queueHref('confirmed', query, true)}
-              active={activeFilter === 'confirmed' && resolvedSearchParams.unassigned === '1'}
+              active={activeFilter === 'confirmed' && unassigned}
             />
             <QueueTab label="In field" count={tabCounts.field} href={queueHref('field', query)} active={activeFilter === 'field'} />
             <QueueTab label="Completed" count={tabCounts.completed} href={queueHref('completed', query)} active={activeFilter === 'completed'} />
@@ -120,7 +127,7 @@ export default async function AdminBookingsPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredBookings.map((booking) => (
+              {bookings.map((booking) => (
                 <tr key={booking.id} className="transition hover:bg-[#F8FCFE]">
                   <td className="px-5 py-4">
                     <p className="font-extrabold text-[#0B2A4A]">{booking.order_id}</p>
@@ -142,7 +149,7 @@ export default async function AdminBookingsPage({
                     <StatusBadge status={booking.status} />
                   </td>
                   <td className="px-5 py-4">
-                    <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref={successHref} />
+                    <BookingQuickAction booking={booking} technicians={technicians} activeCounts={mergedActiveCounts} successHref={successHref} />
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link href={`/admin/bookings/${booking.order_id}`} className="font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
@@ -156,7 +163,7 @@ export default async function AdminBookingsPage({
         </div>
 
         <div className="grid gap-3 p-4 md:hidden">
-          {filteredBookings.map((booking) => (
+          {bookings.map((booking) => (
             <article key={booking.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -179,7 +186,7 @@ export default async function AdminBookingsPage({
                 </p>
               </div>
               <div className="mt-4 grid gap-3">
-                <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref={successHref} />
+                <BookingQuickAction booking={booking} technicians={technicians} activeCounts={mergedActiveCounts} successHref={successHref} />
                 <Link href={`/admin/bookings/${booking.order_id}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A]">
                   Manage order
                   <ArrowRight className="size-4" aria-hidden="true" />
@@ -189,10 +196,42 @@ export default async function AdminBookingsPage({
           ))}
         </div>
 
-        {filteredBookings.length === 0 ? (
+        {bookings.length === 0 ? (
           <div className="p-8 text-center">
             <p className="font-bold text-[#0B2A4A]">No bookings found</p>
             <p className="mt-1 text-sm text-slate-500">Try another queue tab or search term.</p>
+          </div>
+        ) : null}
+
+        {totalFiltered > pageSize ? (
+          <div className="flex flex-col gap-3 border-t border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-semibold text-slate-500">
+              Page {page} of {totalPages} / {totalFiltered} orders
+            </p>
+            <div className="flex gap-2">
+              <Link
+                href={page > 1 ? queueHref(activeFilter, query, unassigned, page - 1) : '#'}
+                aria-disabled={page <= 1}
+                className={`inline-flex min-h-[40px] items-center rounded-lg border px-4 text-sm font-bold ${
+                  page <= 1
+                    ? 'pointer-events-none border-slate-100 text-slate-300'
+                    : 'border-slate-200 text-[#0B2A4A] hover:border-[#2EA9D6] hover:text-[#2EA9D6]'
+                }`}
+              >
+                Previous
+              </Link>
+              <Link
+                href={page < totalPages ? queueHref(activeFilter, query, unassigned, page + 1) : '#'}
+                aria-disabled={page >= totalPages}
+                className={`inline-flex min-h-[40px] items-center rounded-lg border px-4 text-sm font-bold ${
+                  page >= totalPages
+                    ? 'pointer-events-none border-slate-100 text-slate-300'
+                    : 'border-slate-200 text-[#0B2A4A] hover:border-[#2EA9D6] hover:text-[#2EA9D6]'
+                }`}
+              >
+                Next
+              </Link>
+            </div>
           </div>
         ) : null}
       </section>
@@ -216,41 +255,29 @@ function QueueTab({ label, count, href, active }: { label: string; count: number
   );
 }
 
-function filterBookings(bookings: BookingRow[], params: QueueSearchParams) {
-  const query = (params.q || '').trim().toLowerCase();
-
-  return bookings.filter((booking) => {
-    const matchesStatus =
-      !params.status ||
-      params.status === 'all' ||
-      (params.status === 'field' ? fieldStatuses.includes(booking.status) : booking.status === params.status);
-    const matchesUnassigned = params.unassigned === '1' ? !booking.assigned_technician_id : true;
-    const searchableText = [
-      booking.order_id,
-      booking.customer_name,
-      booking.customer_phone,
-      booking.address,
-      booking.services?.title,
-      booking.service_id,
-      booking.status
-    ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
-
-    return matchesStatus && matchesUnassigned && (!query || searchableText.includes(query));
-  });
-}
-
-function queueHref(status: string, query: string, unassigned = false, action?: string) {
+function queueHref(status: string, query: string, unassigned = false, page = 1, action?: string) {
   const params = new URLSearchParams();
   params.set('status', status);
   if (unassigned) params.set('unassigned', '1');
   if (query) params.set('q', query);
+  if (page > 1) params.set('page', String(page));
   if (action) params.set('action', action);
   return `/admin/bookings?${params.toString()}`;
 }
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
+}
+
+function getCountForFilter(
+  counts: Awaited<ReturnType<typeof getBookingQueueCounts>>,
+  status: string,
+  unassigned: boolean
+) {
+  if (status === 'pending') return counts.pending;
+  if (status === 'confirmed' && unassigned) return counts.ready;
+  if (status === 'field') return counts.field;
+  if (status === 'completed') return counts.completed;
+  if (status === 'cancelled') return counts.cancelled;
+  return counts.all;
 }

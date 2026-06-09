@@ -95,18 +95,76 @@ const mockBookings: BookingRow[] = [
 
 const activeTechnicianStatuses = ['assigned', 'accepted', 'on_the_way', 'in_progress'];
 
-export async function getAdminBookings() {
-  if (!hasSupabaseConfig()) return mockBookings;
+export type AdminBookingListOptions = {
+  page?: number;
+  pageSize?: number;
+  status?: string;
+  unassigned?: boolean;
+  query?: string;
+};
+
+export async function getAdminBookings(options: AdminBookingListOptions = {}) {
+  if (!hasSupabaseConfig()) {
+    return filterMockBookings(mockBookings, options).slice(
+      ((options.page || 1) - 1) * (options.pageSize || 50),
+      (options.page || 1) * (options.pageSize || 50)
+    );
+  }
 
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
+  const page = Math.max(1, options.page || 1);
+  const pageSize = Math.min(Math.max(options.pageSize || 50, 1), 100);
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  let query = supabase
     .from('bookings')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(50);
+    .range(from, to);
+
+  query = applyBookingFilters(query, options);
+
+  const { data, error } = await query;
 
   if (error) throw error;
   return hydrateBookings((data || []) as BookingRow[]);
+}
+
+export async function getBookingQueueCounts(searchQuery = '') {
+  if (!hasSupabaseConfig()) {
+    const searchableBookings = filterMockBookings(mockBookings, { query: searchQuery });
+
+    return {
+      all: searchableBookings.length,
+      pending: searchableBookings.filter((booking) => booking.status === 'pending').length,
+      ready: searchableBookings.filter((booking) => booking.status === 'confirmed' && !booking.assigned_technician_id).length,
+      field: searchableBookings.filter((booking) => activeTechnicianStatuses.includes(booking.status)).length,
+      completed: searchableBookings.filter((booking) => booking.status === 'completed').length,
+      cancelled: searchableBookings.filter((booking) => booking.status === 'cancelled').length
+    };
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const [all, pending, ready, assigned, accepted, onTheWay, inProgress, completed, cancelled] = await Promise.all([
+    countBookings(supabase, { query: searchQuery }),
+    countBookings(supabase, { status: 'pending', query: searchQuery }),
+    countBookings(supabase, { status: 'confirmed', unassigned: true, query: searchQuery }),
+    countBookings(supabase, { status: 'assigned', query: searchQuery }),
+    countBookings(supabase, { status: 'accepted', query: searchQuery }),
+    countBookings(supabase, { status: 'on_the_way', query: searchQuery }),
+    countBookings(supabase, { status: 'in_progress', query: searchQuery }),
+    countBookings(supabase, { status: 'completed', query: searchQuery }),
+    countBookings(supabase, { status: 'cancelled', query: searchQuery })
+  ]);
+
+  return {
+    all,
+    pending,
+    ready,
+    field: assigned + accepted + onTheWay + inProgress,
+    completed,
+    cancelled
+  };
 }
 
 export async function getBookingByOrderId(orderId: string) {
@@ -219,15 +277,15 @@ export async function getDashboardStats() {
   const supabase = await createServerSupabaseClient();
   const [total, pending, confirmed, readyToAssign, assigned, accepted, onTheWay, inProgress, completed, cancelled] = await Promise.all([
     countBookings(supabase),
-    countBookings(supabase, 'pending'),
-    countBookings(supabase, 'confirmed'),
-    countBookings(supabase, 'confirmed', true),
-    countBookings(supabase, 'assigned'),
-    countBookings(supabase, 'accepted'),
-    countBookings(supabase, 'on_the_way'),
-    countBookings(supabase, 'in_progress'),
-    countBookings(supabase, 'completed'),
-    countBookings(supabase, 'cancelled')
+    countBookings(supabase, { status: 'pending' }),
+    countBookings(supabase, { status: 'confirmed' }),
+    countBookings(supabase, { status: 'confirmed', unassigned: true }),
+    countBookings(supabase, { status: 'assigned' }),
+    countBookings(supabase, { status: 'accepted' }),
+    countBookings(supabase, { status: 'on_the_way' }),
+    countBookings(supabase, { status: 'in_progress' }),
+    countBookings(supabase, { status: 'completed' }),
+    countBookings(supabase, { status: 'cancelled' })
   ]);
 
   return {
@@ -333,15 +391,75 @@ function isUuid(value: string) {
 
 async function countBookings(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
-  status?: string,
-  unassigned = false
+  options: Pick<AdminBookingListOptions, 'status' | 'unassigned' | 'query'> = {}
 ) {
   let query = supabase.from('bookings').select('id', { count: 'exact', head: true });
 
-  if (status) query = query.eq('status', status);
-  if (unassigned) query = query.is('assigned_technician_id', null);
+  query = applyBookingFilters(query, options);
 
   const { count, error } = await query;
   if (error) throw error;
   return count || 0;
+}
+
+function applyBookingFilters<QueryBuilder extends { eq: (column: string, value: string) => QueryBuilder; is: (column: string, value: null) => QueryBuilder; or: (filters: string) => QueryBuilder }>(
+  query: QueryBuilder,
+  options: Pick<AdminBookingListOptions, 'status' | 'unassigned' | 'query'>
+) {
+  if (options.status && options.status !== 'all') {
+    if (options.status === 'field') {
+      query = query.or(activeTechnicianStatuses.map((status) => `status.eq.${status}`).join(','));
+    } else {
+      query = query.eq('status', options.status);
+    }
+  }
+
+  if (options.unassigned) query = query.is('assigned_technician_id', null);
+
+  const search = sanitizeSearch(options.query || '');
+  if (search) {
+    query = query.or(
+      [
+        `order_id.ilike.%${search}%`,
+        `customer_name.ilike.%${search}%`,
+        `customer_phone.ilike.%${search}%`,
+        `address.ilike.%${search}%`,
+        `status.ilike.%${search}%`,
+        `source.ilike.%${search}%`
+      ].join(',')
+    );
+  }
+
+  return query;
+}
+
+function filterMockBookings(bookings: BookingRow[], options: AdminBookingListOptions) {
+  const search = sanitizeSearch(options.query || '').toLowerCase();
+
+  return bookings.filter((booking) => {
+    const matchesStatus =
+      !options.status ||
+      options.status === 'all' ||
+      (options.status === 'field' ? activeTechnicianStatuses.includes(booking.status) : booking.status === options.status);
+    const matchesUnassigned = options.unassigned ? !booking.assigned_technician_id : true;
+    const searchableText = [
+      booking.order_id,
+      booking.customer_name,
+      booking.customer_phone,
+      booking.address,
+      booking.services?.title,
+      booking.service_id,
+      booking.status,
+      booking.source
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return matchesStatus && matchesUnassigned && (!search || searchableText.includes(search));
+  });
+}
+
+function sanitizeSearch(value: string) {
+  return value.replace(/[,%]/g, ' ').trim();
 }

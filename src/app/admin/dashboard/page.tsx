@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowRight, CheckCircle2, Clock3, ClipboardList, MapPin, Phone, Plus, UserRoundCheck, Wrench } from 'lucide-react';
+import { AutoRefreshNotice } from '@/components/admin/AutoRefreshNotice';
 import { BookingQuickAction, getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
@@ -77,6 +78,7 @@ export default async function AdminDashboardPage({
             Booking queue
             <ArrowRight className="size-4" aria-hidden="true" />
           </Link>
+          <AutoRefreshNotice latestBookingId={recentBookings[0]?.id} />
         </>
       }
     >
