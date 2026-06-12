@@ -34,6 +34,11 @@ export interface BookingRequest {
   customerPhone: string;
   address: string;
   serviceId?: string;
+  quantity?: number;
+  applianceType?: string;
+  applianceCapacity?: string;
+  selectedAddons?: string[];
+  estimatedPrice?: number;
   preferredDate: string;
   preferredTime: string;
   notes?: string;

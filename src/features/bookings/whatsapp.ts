@@ -19,6 +19,7 @@ export function createWhatsAppUrl(input: BookingRequestInput, orderId: string) {
       ? `BDT ${service.price}`
       : service.price
     : '';
+  const quantity = input.quantity || 1;
 
   const lines = [
     '*BOOKING REQUEST*',
@@ -26,7 +27,12 @@ export function createWhatsAppUrl(input: BookingRequestInput, orderId: string) {
     '',
     '*SERVICE*',
     `Name     : ${serviceName}`,
+    `Quantity : ${quantity}`,
     ...(servicePrice ? [`Price    : ${servicePrice}`] : []),
+    ...(input.estimatedPrice ? [`Estimate : BDT ${input.estimatedPrice}`] : []),
+    ...(input.applianceType ? [`Type     : ${input.applianceType}`] : []),
+    ...(input.applianceCapacity ? [`Details  : ${input.applianceCapacity}`] : []),
+    ...(input.selectedAddons?.length ? [`Add-ons  : ${input.selectedAddons.join(', ')}`] : []),
     '',
     '*CUSTOMER*',
     `Name     : ${input.customerName}`,

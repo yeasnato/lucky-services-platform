@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createOrderId, createWhatsAppUrl } from '@/features/bookings/whatsapp';
-import { bookingRequestSchema } from '@/lib/validations/booking';
+import { bookingRequestSchema, type BookingRequestInput } from '@/lib/validations/booking';
 import { createServiceClient } from '@/lib/supabase/server';
+import { services } from '@/data/services';
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
         service_id: parsed.data.serviceId || null,
         preferred_date: parsed.data.preferredDate,
         preferred_time: parsed.data.preferredTime,
-        notes: parsed.data.notes || null,
+        notes: buildBookingNotes(parsed.data),
         status: 'pending',
         source: parsed.data.source || 'website'
       })
@@ -53,4 +54,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Booking could not be saved.' }, { status: 500 });
   }
+}
+
+function buildBookingNotes(input: BookingRequestInput) {
+  const service = input.serviceId ? services.find((item) => item.id === input.serviceId) : null;
+  const details = [
+    'Website booking details:',
+    `Service: ${service?.title || input.serviceId || 'General Inquiry'}`,
+    `Quantity: ${input.quantity || 1}`,
+    ...(input.applianceType ? [`Appliance type: ${input.applianceType}`] : []),
+    ...(input.applianceCapacity ? [`Appliance details: ${input.applianceCapacity}`] : []),
+    ...(input.selectedAddons?.length ? [`Add-ons: ${input.selectedAddons.join(', ')}`] : []),
+    ...(input.estimatedPrice ? [`Estimated price: BDT ${input.estimatedPrice}`] : [])
+  ];
+  const customerNote = input.notes?.trim();
+
+  return customerNote ? `${details.join('\n')}\n\nCustomer note:\n${customerNote}` : details.join('\n');
 }
