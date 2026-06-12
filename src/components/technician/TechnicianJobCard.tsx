@@ -1,43 +1,58 @@
 import Link from 'next/link';
-import { ArrowRight, BadgeDollarSign, CalendarClock, MapPin, Phone } from 'lucide-react';
-import { StatusBadge } from '@/components/admin/StatusBadge';
+import { BadgeDollarSign, CalendarClock, Fan, MapPin, Snowflake, Wrench } from 'lucide-react';
 import type { BookingRow } from '@/features/bookings/queries';
 
-const activeStatuses = ['assigned', 'accepted', 'on_the_way', 'in_progress'];
+const statusStyles: Record<string, string> = {
+  assigned: 'bg-amber-50 text-amber-600',
+  accepted: 'bg-sky-50 text-[#2EA9D6]',
+  on_the_way: 'bg-sky-50 text-[#2EA9D6]',
+  in_progress: 'bg-sky-50 text-[#2EA9D6]',
+  completed: 'bg-emerald-50 text-emerald-600',
+  cancelled: 'bg-rose-50 text-rose-600'
+};
 
 export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; compact?: boolean }) {
   const serviceTitle = job.services?.title || job.service_id || 'General Inquiry';
-  const isActive = activeStatuses.includes(job.status);
-  const isLate = isActive && isPastDate(job.preferred_date);
-  const price = job.final_price ? `BDT ${job.final_price.toLocaleString('en')}` : 'Price pending';
+  const price = job.final_price ? `৳${job.final_price.toLocaleString('en')}` : 'Price pending';
+  const statusLabel = job.status.replaceAll('_', ' ');
+  const Icon = getServiceIcon(job.service_id || serviceTitle);
+  const disabled = ['completed', 'cancelled'].includes(job.status);
 
   return (
     <Link
       href={`/technician/jobs/${job.order_id}`}
-      className="group block rounded-lg border border-slate-200 bg-white p-4 transition hover:border-[#2EA9D6] hover:shadow-sm"
+      className="block rounded-lg border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2EA9D6] hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-bold tracking-wide text-[#0B2A4A]">{job.order_id}</p>
-            {isLate ? (
-              <span className="rounded-md border border-red-100 bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">Late</span>
-            ) : null}
+        <div className="flex min-w-0 gap-3">
+          <div className={`flex size-11 shrink-0 items-center justify-center rounded-lg ${disabled ? 'bg-emerald-50 text-emerald-500' : 'bg-[#F0F9FC] text-[#2EA9D6]'}`}>
+            <Icon className="size-5" aria-hidden="true" />
           </div>
-          <h3 className="mt-1 text-base font-bold leading-6 text-[#0B2A4A]">{job.customer_name}</h3>
-          <p className="mt-1 text-sm font-medium leading-5 text-slate-600">{serviceTitle}</p>
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-extrabold text-[#0B2A4A]">{serviceTitle}</h3>
+            <p className="mt-1 text-xs font-semibold text-slate-400">Order #{job.order_id}</p>
+          </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <StatusBadge status={job.status} />
-          <ArrowRight className="size-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-[#2EA9D6]" aria-hidden="true" />
-        </div>
+        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold capitalize ${statusStyles[job.status] || 'bg-slate-100 text-slate-500'}`}>
+          {statusLabel}
+        </span>
       </div>
 
-      <div className={`mt-4 grid gap-2 border-t border-slate-100 pt-4 text-sm font-medium text-slate-600 ${compact ? '' : 'sm:grid-cols-2'}`}>
-        <Info icon={<CalendarClock className="size-4" />} text={`${formatDate(job.preferred_date)} / ${job.preferred_time}`} />
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-slate-500">
         <Info icon={<MapPin className="size-4" />} text={job.address} />
-        {!compact ? <Info icon={<Phone className="size-4" />} text={job.customer_phone} /> : null}
-        <Info icon={<BadgeDollarSign className="size-4" />} text={price} />
+        <Info icon={<CalendarClock className="size-4" />} text={`${compact ? formatDate(job.preferred_date) : job.preferred_time}`} />
+      </div>
+
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <div className="flex items-center justify-between gap-3">
+          <p className="inline-flex items-center gap-1 text-lg font-extrabold text-[#0B2A4A]">
+            <BadgeDollarSign className="size-4 text-[#2EA9D6]" aria-hidden="true" />
+            {price}
+          </p>
+          <span className={`inline-flex min-h-[42px] items-center rounded-lg px-4 text-sm font-extrabold ${disabled ? 'bg-slate-100 text-slate-400' : 'bg-[#0B2A4A] text-white'}`}>
+            View Details
+          </span>
+        </div>
       </div>
     </Link>
   );
@@ -45,18 +60,20 @@ export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; c
 
 function Info({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <p className="flex min-w-0 items-start gap-2">
-      <span className="mt-0.5 shrink-0 text-[#2EA9D6]">{icon}</span>
-      <span className="line-clamp-2">{text}</span>
-    </p>
+    <span className="inline-flex min-w-0 items-center gap-1">
+      <span className="shrink-0 text-slate-400">{icon}</span>
+      <span className="max-w-[220px] truncate">{text}</span>
+    </span>
   );
+}
+
+function getServiceIcon(value: string) {
+  const normalized = value.toLowerCase();
+  if (normalized.includes('ac')) return Snowflake;
+  if (normalized.includes('fan') || normalized.includes('hood')) return Fan;
+  return Wrench;
 }
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(value));
-}
-
-function isPastDate(value: string) {
-  const today = new Date().toISOString().slice(0, 10);
-  return value < today;
 }
