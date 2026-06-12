@@ -4,14 +4,26 @@ import { LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export function LogoutButton() {
+export function LogoutButton({ variant = 'default', redirectTo = '/login' }: { variant?: 'default' | 'icon'; redirectTo?: string } = {}) {
   const router = useRouter();
 
   async function signOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push(redirectTo);
     router.refresh();
+  }
+
+  if (variant === 'icon') {
+    return (
+      <button
+        onClick={signOut}
+        className="inline-flex size-10 items-center justify-center rounded-full bg-white text-[#0B2A4A] shadow-sm transition hover:bg-[#F0F9FC]"
+        aria-label="Sign out"
+      >
+        <LogOut className="size-5" aria-hidden="true" />
+      </button>
+    );
   }
 
   return (

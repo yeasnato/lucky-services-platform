@@ -19,7 +19,7 @@ export default async function TechnicianProfilePage() {
   return (
     <TechnicianShell>
       <div className="mx-auto w-full max-w-[470px]">
-        <section className="rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
+        <section className="rounded-[22px] border border-slate-100 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[#0B2A4A] text-2xl font-extrabold text-white ring-4 ring-[#EAF8FD]">
               {getInitials(displayName)}
@@ -74,7 +74,7 @@ export default async function TechnicianProfilePage() {
           </Panel>
         </section>
 
-        <section className="mt-5 rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
+        <section className="mt-5 rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Field guidance</p>
           <h2 className="mt-1 text-xl font-extrabold text-[#0B2A4A]">Keep every visit easy to dispatch</h2>
           <div className="mt-4 grid gap-3 text-sm font-medium leading-6 text-slate-600">
@@ -90,8 +90,8 @@ export default async function TechnicianProfilePage() {
 
 function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#F0F9FC] text-[#2EA9D6]">{icon}</div>
+    <div className="rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm">
+      <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F0F9FC] text-[#2EA9D6]">{icon}</div>
       <p className="mt-4 text-xs font-bold text-slate-500">{label}</p>
       <p className="mt-1 truncate text-xl font-extrabold text-[#0B2A4A]">{value}</p>
     </div>
@@ -100,7 +100,7 @@ function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; 
 
 function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-lg border border-slate-100 bg-white p-5 shadow-sm">
+    <section className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
       <h2 className="inline-flex items-center gap-2 text-lg font-extrabold text-[#0B2A4A]">
         <span className="text-[#2EA9D6]">{icon}</span>
         {title}
@@ -115,12 +115,12 @@ function Chip({ label }: { label: string }) {
 }
 
 function EmptyLine({ text }: { text: string }) {
-  return <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-500">{text}</p>;
+  return <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-500">{text}</p>;
 }
 
 function Guidance({ text }: { text: string }) {
   return (
-    <div className="rounded-lg bg-slate-50 p-4">
+    <div className="rounded-2xl bg-slate-50 p-4">
       <CheckCircle2 className="mb-2 size-5 text-[#2EA9D6]" aria-hidden="true" />
       {text}
     </div>
