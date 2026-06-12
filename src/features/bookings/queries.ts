@@ -90,6 +90,41 @@ const mockBookings: BookingRow[] = [
     assigned_technician_id: 'mock-tech-1',
     created_at: new Date().toISOString(),
     services: { title: 'Geyser Installation' }
+  },
+  {
+    id: 'mock-4',
+    order_id: 'LSC-260612-M4R8',
+    customer_name: 'Shahidur Shakil',
+    customer_phone: '01605564270',
+    address: 'Dhanmondi, Dhaka',
+    service_id: 'washing-machine',
+    preferred_date: new Date().toISOString().slice(0, 10),
+    preferred_time: '10:30 AM',
+    status: 'in_progress',
+    source: 'website',
+    assigned_technician_id: 'mock-tech-1',
+    final_price: 850,
+    notes: 'Customer requested technician to call before arrival.',
+    created_at: new Date().toISOString(),
+    services: { title: 'Washing Machine Regular Check Up' }
+  },
+  {
+    id: 'mock-5',
+    order_id: 'LSC-260612-Z8X2',
+    customer_name: 'Rahat Khan',
+    customer_phone: '01711223344',
+    address: 'Uttara, Dhaka',
+    service_id: 'ac-install',
+    preferred_date: new Date(Date.now() - 86400000).toISOString().slice(0, 10),
+    preferred_time: '2:00 PM',
+    status: 'completed',
+    source: 'admin',
+    assigned_technician_id: 'mock-tech-1',
+    final_price: 2500,
+    completed_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    services: { title: 'AC Installation' }
   }
 ];
 
@@ -208,7 +243,7 @@ export async function getTechnicianBookingByOrderId(orderId: string, technicianI
 
 export async function getTechnicianJobs(profileId?: string) {
   if (!hasSupabaseConfig() || !profileId) {
-    return mockBookings.filter((booking) => activeTechnicianStatuses.includes(booking.status));
+    return mockBookings.filter((booking) => activeTechnicianStatuses.includes(booking.status) && (!booking.assigned_technician_id || booking.assigned_technician_id === 'mock-tech-1'));
   }
 
   const supabase = await createServerSupabaseClient();
@@ -221,6 +256,23 @@ export async function getTechnicianJobs(profileId?: string) {
 
   if (error) throw error;
   return hydrateBookings((data || []) as BookingRow[]);
+}
+
+export async function getTechnicianAllJobs(profileId?: string, limit = 100) {
+  if (!hasSupabaseConfig() || !profileId) {
+    return sortTechnicianJobs(mockBookings.filter((booking) => booking.assigned_technician_id === 'mock-tech-1')).slice(0, limit);
+  }
+
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('assigned_technician_id', profileId)
+    .order('preferred_date', { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+  return sortTechnicianJobs(await hydrateBookings((data || []) as BookingRow[]));
 }
 
 export async function getTechnicianCompletedJobs(profileId?: string, limit = 20) {
@@ -462,4 +514,24 @@ function filterMockBookings(bookings: BookingRow[], options: AdminBookingListOpt
 
 function sanitizeSearch(value: string) {
   return value.replace(/[,%]/g, ' ').trim();
+}
+
+function sortTechnicianJobs(bookings: BookingRow[]) {
+  const priority: Record<string, number> = {
+    in_progress: 0,
+    on_the_way: 1,
+    accepted: 2,
+    assigned: 3,
+    completed: 4,
+    cancelled: 5
+  };
+
+  return [...bookings].sort((a, b) => {
+    const priorityDiff = (priority[a.status] ?? 6) - (priority[b.status] ?? 6);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    const aDate = new Date(a.preferred_date || a.updated_at || a.created_at).getTime();
+    const bDate = new Date(b.preferred_date || b.updated_at || b.created_at).getTime();
+    return a.status === 'completed' ? bDate - aDate : aDate - bDate;
+  });
 }

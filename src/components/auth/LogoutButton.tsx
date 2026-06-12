@@ -18,10 +18,10 @@ export function LogoutButton({ variant = 'default', redirectTo = '/login' }: { v
     return (
       <button
         onClick={signOut}
-        className="inline-flex size-10 items-center justify-center rounded-full bg-white text-[#0B2A4A] shadow-sm transition hover:bg-[#F0F9FC]"
+        className="inline-flex size-11 items-center justify-center rounded-full border border-slate-200 bg-white text-[#000D32] shadow-sm transition hover:bg-slate-50"
         aria-label="Sign out"
       >
-        <LogOut className="size-5" aria-hidden="true" />
+        <LogOut className="size-6" aria-hidden="true" />
       </button>
     );
   }

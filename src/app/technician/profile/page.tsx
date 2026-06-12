@@ -1,133 +1,146 @@
-import { BadgeCheck, BriefcaseBusiness, CheckCircle2, MapPin, Phone, ShieldCheck, WalletCards, Wrench } from 'lucide-react';
+import { BadgeCheck, HelpCircle, Mail, MapPin, Phone, ShieldCheck, Star, UserRound, Wrench } from 'lucide-react';
+import { LogoutButton } from '@/components/auth/LogoutButton';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { getTechnicianCompletedJobs, getTechnicianJobs } from '@/features/bookings/queries';
+import { isDelayedJob, TechnicianCard } from '@/components/technician/TechnicianUI';
+import { business } from '@/data/business';
+import { getTechnicianAllJobs, getTechnicianCompletedJobs } from '@/features/bookings/queries';
 import { getTechnicianById, getTechnicianCapabilities } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
 
 export default async function TechnicianProfilePage() {
   const profile = await requireRole(['technician']);
-  const [technician, capabilities, activeJobs, completedJobs] = await Promise.all([
+  const [technician, capabilities, allJobs, completedJobs] = await Promise.all([
     getTechnicianById(profile.id),
     getTechnicianCapabilities(profile.id),
-    getTechnicianJobs(profile.id),
-    getTechnicianCompletedJobs(profile.id, 50)
+    getTechnicianAllJobs(profile.id, 100),
+    getTechnicianCompletedJobs(profile.id, 100)
   ]);
   const displayName = technician?.display_name || profile.full_name;
-  const phone = technician?.phone || profile.phone || 'Not added';
-  const completedValue = completedJobs.reduce((total, job) => total + (job.final_price || 0), 0);
+  const phone = technician?.phone || profile.phone || 'Not provided';
+  const cancelled = allJobs.filter((job) => job.status === 'cancelled').length;
+  const issues = allJobs.filter((job) => isDelayedJob(job.preferred_date, job.status) || (job.notes || '').toLowerCase().includes('not reachable')).length;
 
   return (
-    <TechnicianShell>
-      <div className="mx-auto w-full max-w-[470px]">
-        <section className="rounded-[22px] border border-slate-100 bg-white p-5 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[#0B2A4A] text-2xl font-extrabold text-white ring-4 ring-[#EAF8FD]">
-              {getInitials(displayName)}
+    <TechnicianShell title="Profile" backHref="/technician/dashboard">
+      <TechnicianCard accent="bg-[#000D32]" className="p-6 pl-8">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-5">
+            <div className="flex size-24 shrink-0 items-center justify-center rounded-full bg-[#E9F0F8] text-3xl font-black text-[#000D32] ring-4 ring-white">
+              {initials(displayName)}
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Technician profile</p>
-              <h1 className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{displayName}</h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
-                <span className="inline-flex items-center gap-1 rounded-full bg-[#EAF8FD] px-3 py-1 text-[#0B2A4A]">
-                  <ShieldCheck className="size-4 text-[#2EA9D6]" aria-hidden="true" />
-                  Technician
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+            <div className="min-w-0">
+              <h1 className="truncate text-2xl font-black text-[#000D32]">{displayName}</h1>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="text-sm font-medium text-[#64748B]">ID: {profile.id.slice(0, 6).toUpperCase()}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-emerald-700">
                   <BadgeCheck className="size-4" aria-hidden="true" />
-                  {technician?.availability_status || 'available'}
+                  Verified
                 </span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-4 text-sm font-black text-[#64748B]">
+                <span className="inline-flex items-center gap-1">
+                  <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
+                  {technician?.rating || '5.0'}
+                </span>
+                <span>{completedJobs.length} Jobs Completed</span>
               </div>
             </div>
           </div>
-        </section>
+          <UserRound className="size-6 shrink-0 text-[#000D32]" aria-hidden="true" />
+        </div>
+      </TechnicianCard>
 
-        <section className="mt-5 grid grid-cols-2 gap-3">
-          <Metric icon={<BriefcaseBusiness className="size-5" />} label="Active jobs" value={activeJobs.length.toString()} />
-          <Metric icon={<CheckCircle2 className="size-5" />} label="Completed" value={completedJobs.length.toString()} />
-          <Metric icon={<WalletCards className="size-5" />} label="Completed value" value={`৳${completedValue.toLocaleString('en')}`} />
-          <Metric icon={<Phone className="size-5" />} label="Phone" value={phone} />
-        </section>
+      <TechnicianCard accent="bg-[#50D9FE]" className="mt-7 p-6 pl-8">
+        <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#64748B]">Contact Information</p>
+        <div className="mt-6 grid gap-5">
+          <Contact icon={<Phone className="size-6" />} label="Phone Number" value={phone} />
+          <Contact icon={<Mail className="size-6" />} label="Email Address" value="Not provided" muted />
+        </div>
+      </TechnicianCard>
 
-        <section className="mt-5 grid gap-5">
-          <Panel title="Assigned service skills" icon={<Wrench className="size-5" />}>
-            {capabilities.skills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {capabilities.skills.map((skill) => (
-                  <Chip key={skill} label={skill} />
-                ))}
-              </div>
-            ) : (
-              <EmptyLine text="Admin has not assigned service skills yet." />
-            )}
-          </Panel>
+      <TechnicianCard accent="bg-blue-500" className="mt-7 p-6 pl-8">
+        <p className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.18em] text-[#64748B]">
+          <Wrench className="size-5" aria-hidden="true" />
+          Assigned Categories
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {capabilities.skills.length ? capabilities.skills.map((skill) => <Chip key={skill} label={skill} />) : <Chip label="No category assigned" />}
+        </div>
+      </TechnicianCard>
 
-          <Panel title="Assigned service areas" icon={<MapPin className="size-5" />}>
-            {capabilities.areas.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {capabilities.areas.map((area) => (
-                  <Chip key={area} label={area} />
-                ))}
-              </div>
-            ) : (
-              <EmptyLine text="Admin has not assigned service areas yet." />
-            )}
-          </Panel>
-        </section>
+      <TechnicianCard accent="bg-emerald-500" className="mt-7 p-6 pl-8">
+        <p className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.18em] text-[#64748B]">
+          <MapPin className="size-5" aria-hidden="true" />
+          Assigned Areas
+        </p>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {capabilities.areas.length ? capabilities.areas.map((area) => <Chip key={area} label={area} />) : <Chip label="No area assigned" />}
+        </div>
+      </TechnicianCard>
 
-        <section className="mt-5 rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Field guidance</p>
-          <h2 className="mt-1 text-xl font-extrabold text-[#0B2A4A]">Keep every visit easy to dispatch</h2>
-          <div className="mt-4 grid gap-3 text-sm font-medium leading-6 text-slate-600">
-            <Guidance text="Call customer before moving and use map route from the job screen." />
-            <Guidance text="If schedule changes, update the new date/time with a clear reason." />
-            <Guidance text="Before completing, confirm final price and add the work completion note." />
+      <section className="mt-8">
+        <p className="text-sm font-extrabold uppercase tracking-[0.18em] text-[#64748B]">Performance Overview</p>
+        <div className="mt-5 grid grid-cols-2 gap-5">
+          <Performance label="Completed" value={completedJobs.length} tone="text-emerald-600" />
+          <Performance label="Cancelled" value={cancelled} tone="text-red-500" />
+          <Performance label="Reviews" value={0} tone="text-[#191C1E]" />
+          <Performance label="Issues" value={issues} tone="text-amber-500" />
+        </div>
+      </section>
+
+      <TechnicianCard className="mt-8 overflow-hidden p-0">
+        <ProfileRow icon={<Phone className="size-7" />} label="Call Admin Support" href={`tel:${business.phoneInternational}`} />
+        <ProfileRow icon={<HelpCircle className="size-7" />} label="Email Support" href={`mailto:${business.email}`} />
+        <div className="flex items-center justify-between border-t border-slate-100 p-5 text-red-600">
+          <div className="flex items-center gap-4">
+            <ShieldCheck className="size-7" aria-hidden="true" />
+            <span className="text-lg font-medium">Logout</span>
           </div>
-        </section>
-      </div>
+          <LogoutButton variant="icon" redirectTo="/technician/login" />
+        </div>
+      </TechnicianCard>
     </TechnicianShell>
   );
 }
 
-function Metric({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function Contact({ icon, label, value, muted }: { icon: React.ReactNode; label: string; value: string; muted?: boolean }) {
   return (
-    <div className="rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-[#F0F9FC] text-[#2EA9D6]">{icon}</div>
-      <p className="mt-4 text-xs font-bold text-slate-500">{label}</p>
-      <p className="mt-1 truncate text-xl font-extrabold text-[#0B2A4A]">{value}</p>
+    <div className="flex items-center gap-5">
+      <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#E9F0F8] text-[#000D32]">{icon}</div>
+      <div>
+        <p className="text-sm font-black text-[#64748B]">{label}</p>
+        <p className={`mt-1 text-lg font-black ${muted ? 'italic text-[#64748B]' : 'text-[#191C1E]'}`}>{value}</p>
+      </div>
     </div>
-  );
-}
-
-function Panel({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
-  return (
-    <section className="rounded-[20px] border border-slate-100 bg-white p-5 shadow-sm">
-      <h2 className="inline-flex items-center gap-2 text-lg font-extrabold text-[#0B2A4A]">
-        <span className="text-[#2EA9D6]">{icon}</span>
-        {title}
-      </h2>
-      <div className="mt-4">{children}</div>
-    </section>
   );
 }
 
 function Chip({ label }: { label: string }) {
-  return <span className="rounded-full bg-[#EAF8FD] px-3 py-2 text-sm font-semibold text-[#0B2A4A]">{label}</span>;
+  return <span className="rounded-xl border border-slate-200 bg-[#F7F9FB] px-4 py-2 text-sm font-black text-[#191C1E]">{label}</span>;
 }
 
-function EmptyLine({ text }: { text: string }) {
-  return <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-sm font-medium text-slate-500">{text}</p>;
-}
-
-function Guidance({ text }: { text: string }) {
+function Performance({ label, value, tone }: { label: string; value: number; tone: string }) {
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
-      <CheckCircle2 className="mb-2 size-5 text-[#2EA9D6]" aria-hidden="true" />
-      {text}
-    </div>
+    <TechnicianCard className="p-8 text-center">
+      <p className={`text-[42px] font-black leading-none ${tone}`}>{value}</p>
+      <p className="mt-5 text-sm font-black text-[#64748B]">{label}</p>
+    </TechnicianCard>
   );
 }
 
-function getInitials(value: string) {
+function ProfileRow({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
+  return (
+    <a href={href} className="flex items-center justify-between border-t border-slate-100 p-5 transition hover:bg-[#F7F9FB] first:border-t-0">
+      <div className="flex items-center gap-4">
+        <span className="text-[#64748B]">{icon}</span>
+        <span className="text-lg font-medium text-[#191C1E]">{label}</span>
+      </div>
+      <span className="text-sm font-black text-[#00677D]">Open</span>
+    </a>
+  );
+}
+
+function initials(value: string) {
   return value
     .split(' ')
     .filter(Boolean)

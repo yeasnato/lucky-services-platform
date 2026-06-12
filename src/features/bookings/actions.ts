@@ -54,6 +54,7 @@ export async function completeTechnicianJob(formData: FormData) {
   const bookingId = String(formData.get('bookingId') || '');
   const finalPriceValue = String(formData.get('finalPrice') || '').trim();
   const completionNote = String(formData.get('completionNote') || '').trim();
+  const priceChangeReason = String(formData.get('priceChangeReason') || '').trim();
 
   if (!bookingId) throw new Error('Booking is required.');
   if (!completionNote) throw new Error('A completion note is required.');
@@ -80,9 +81,18 @@ export async function completeTechnicianJob(formData: FormData) {
 
   assertCanTransition(booking.status, 'completed', profile.role);
 
-  const noteLine = `Technician completion note: ${completionNote}`;
-  const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
   const resolvedFinalPrice = finalPrice ?? booking.final_price ?? null;
+  const previousFinalPrice = booking.final_price || null;
+  const priceChanged = Boolean(previousFinalPrice && resolvedFinalPrice && previousFinalPrice !== resolvedFinalPrice);
+  if (priceChanged && !priceChangeReason) {
+    throw new Error('Please add a reason when the final price changes.');
+  }
+
+  const noteLine = [
+    `Technician completion note: ${completionNote}`,
+    priceChanged && priceChangeReason ? `Price change reason: ${priceChangeReason}` : null
+  ].filter(Boolean).join('\n');
+  const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
 
   const { error } = await supabase
     .from('bookings')
@@ -107,6 +117,7 @@ export async function completeTechnicianJob(formData: FormData) {
   });
 
   revalidateBookingSurfaces(booking.order_id, profile.id);
+  redirect(`/technician/jobs/${booking.order_id}/receipt?completed=1`);
 }
 
 export async function rescheduleTechnicianJob(formData: FormData) {
@@ -114,7 +125,9 @@ export async function rescheduleTechnicianJob(formData: FormData) {
   const bookingId = String(formData.get('bookingId') || '');
   const preferredDate = String(formData.get('preferredDate') || '').trim();
   const preferredTime = String(formData.get('preferredTime') || '').trim();
-  const rescheduleNote = String(formData.get('rescheduleNote') || '').trim();
+  const rescheduleReason = String(formData.get('rescheduleReason') || '').trim();
+  const rescheduleDetails = String(formData.get('rescheduleDetails') || '').trim();
+  const rescheduleNote = String(formData.get('rescheduleNote') || rescheduleReason || '').trim();
 
   if (!bookingId || !preferredDate || !preferredTime) {
     throw new Error('Booking, date, and time are required.');
@@ -139,7 +152,8 @@ export async function rescheduleTechnicianJob(formData: FormData) {
     throw new Error('Completed or cancelled jobs cannot be rescheduled.');
   }
 
-  const noteLine = `Technician reschedule note: ${booking.preferred_date} / ${booking.preferred_time} moved to ${preferredDate} / ${preferredTime}. Reason: ${rescheduleNote}`;
+  const reasonText = [rescheduleNote, rescheduleDetails].filter(Boolean).join('. ');
+  const noteLine = `Technician reschedule note: ${booking.preferred_date} / ${booking.preferred_time} moved to ${preferredDate} / ${preferredTime}. Reason: ${reasonText}`;
   const updatedNotes = booking.notes ? `${booking.notes}\n\n${noteLine}` : noteLine;
 
   const { error } = await supabase
@@ -164,6 +178,7 @@ export async function rescheduleTechnicianJob(formData: FormData) {
   });
 
   revalidateBookingSurfaces(booking.order_id, profile.id);
+  redirect(`/technician/jobs/${booking.order_id}?rescheduled=1`);
 }
 
 export async function addTechnicianJobNote(formData: FormData) {
@@ -400,5 +415,8 @@ function revalidateBookingSurfaces(orderId: string, technicianId?: string | null
   if (technicianId) revalidatePath(`/admin/technicians/${technicianId}`);
   revalidatePath('/technician/dashboard');
   revalidatePath('/technician/jobs');
+  revalidatePath('/technician/alerts');
+  revalidatePath('/technician/jobs?view=delayed');
   revalidatePath(`/technician/jobs/${orderId}`);
+  revalidatePath(`/technician/jobs/${orderId}/receipt`);
 }

@@ -1,175 +1,96 @@
 import Link from 'next/link';
-import {
-  BadgeDollarSign,
-  BriefcaseBusiness,
-  CalendarClock,
-  CheckCircle2,
-  Clock3,
-  Hourglass,
-  LoaderCircle,
-  MapPin,
-  Phone,
-  Route,
-  Zap
-} from 'lucide-react';
+import { CheckCircle2, ClipboardClock, History, LoaderCircle, WalletCards } from 'lucide-react';
 import { TechnicianJobCard } from '@/components/technician/TechnicianJobCard';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { getTechnicianCompletedJobs, getTechnicianJobs } from '@/features/bookings/queries';
+import { formatTaka, isDelayedJob, TechnicianCard } from '@/components/technician/TechnicianUI';
+import { getTechnicianAllJobs, getTechnicianCompletedJobs, getTechnicianJobs } from '@/features/bookings/queries';
 import { getTechnicianById } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
 
 export default async function TechnicianDashboardPage() {
   const profile = await requireRole(['technician']);
-  const [jobs, completedJobs, technician] = await Promise.all([
+  const [activeJobs, allJobs, completedJobs, technician] = await Promise.all([
     getTechnicianJobs(profile.id),
-    getTechnicianCompletedJobs(profile.id, 10),
+    getTechnicianAllJobs(profile.id, 50),
+    getTechnicianCompletedJobs(profile.id, 50),
     getTechnicianById(profile.id)
   ]);
-  const nextJob = jobs[0];
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const todayJobs = jobs.filter((job) => job.preferred_date === todayKey);
-  const pendingJobs = jobs.filter((job) => job.status === 'assigned');
-  const inProgressJobs = jobs.filter((job) => ['accepted', 'on_the_way', 'in_progress'].includes(job.status));
-  const completedValue = completedJobs.reduce((total, job) => total + (job.final_price || 0), 0);
   const displayName = technician?.display_name || profile.full_name;
-  const dashboardJobs = [...jobs.slice(0, 4), ...completedJobs.slice(0, Math.max(0, 5 - jobs.slice(0, 4).length))];
+  const pendingJobs = activeJobs.filter((job) => job.status === 'assigned');
+  const inProgressJobs = activeJobs.filter((job) => ['accepted', 'on_the_way', 'in_progress'].includes(job.status));
+  const delayedJobs = activeJobs.filter((job) => isDelayedJob(job.preferred_date, job.status));
+  const completedValue = completedJobs.reduce((total, job) => total + (job.final_price || 0), 0);
+  const orderPreview = allJobs.slice(0, 2);
 
   return (
-    <TechnicianShell>
-      <div className="mx-auto w-full max-w-[470px]">
-        <section className="mb-5">
-          <p className="text-sm font-semibold text-slate-500">{getGreeting()}</p>
-          <h1 className="text-2xl font-extrabold tracking-tight text-[#0B2A4A]">{displayName}</h1>
-        </section>
+    <TechnicianShell title="LSC">
+      <section>
+        <h1 className="text-[36px] font-black leading-[44px] tracking-normal text-[#000D32]">Good {getDayPart()}, {firstName(displayName)}</h1>
+        <p className="mt-3 text-[22px] font-medium leading-8 text-[#64748B]">
+          You have {activeJobs.length} active {activeJobs.length === 1 ? 'job' : 'jobs'} on your board.
+        </p>
+      </section>
 
-        <section className="rounded-[22px] bg-[#2EA9D6] p-5 text-white shadow-xl shadow-[#2EA9D6]/25">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-white/20">
-                <CalendarClock className="size-5" aria-hidden="true" />
-              </div>
-              <div>
-                <p className="font-extrabold">Today Focus</p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/70">Assigned schedule</p>
-              </div>
+      <TechnicianCard className="mt-8 bg-[#12234D] p-6 text-white">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="flex size-16 items-center justify-center rounded-2xl bg-white/14">
+              <WalletCards className="size-8" aria-hidden="true" />
             </div>
-            <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-extrabold capitalize">{technician?.availability_status || 'Active'}</span>
-          </div>
-
-          <div className="mt-6">
-            <p className="text-xs font-bold uppercase tracking-widest text-white/75">Jobs today</p>
-            <div className="mt-1 flex items-end gap-2">
-              <span className="text-5xl font-black leading-none">{todayJobs.length}</span>
-              <span className="pb-1 text-lg font-extrabold text-white/80">scheduled</span>
+            <div>
+              <h2 className="text-[28px] font-black leading-8">Job Value</h2>
+              <p className="mt-1 text-xs font-extrabold uppercase tracking-[0.18em] text-white/70">Completed services</p>
             </div>
-            <p className="mt-3 line-clamp-2 text-sm font-semibold text-white/80">
-              {nextJob ? `${nextJob.services?.title || nextJob.service_id || 'General Inquiry'} / ${nextJob.customer_name}` : 'New jobs will appear after admin assigns them.'}
-            </p>
           </div>
+          <span className="rounded-full bg-white/18 px-5 py-2 text-base font-black">Active</span>
+        </div>
+        <div className="mt-7">
+          <p className="text-sm font-extrabold uppercase tracking-[0.16em] text-white/70">Total completed value</p>
+          <p className="mt-2 text-[46px] font-black leading-none tracking-normal drop-shadow">{formatTaka(completedValue)}</p>
+        </div>
+        <Link href="/technician/jobs?view=completed" className="mt-7 inline-flex min-h-16 w-full items-center justify-center gap-3 rounded-xl border border-white/25 bg-white/10 text-xl font-black text-white transition hover:bg-white/15">
+          <History className="size-7" aria-hidden="true" />
+          History
+        </Link>
+      </TechnicianCard>
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
-            <Link
-              href={nextJob ? `/technician/jobs/${nextJob.order_id}` : '/technician/jobs'}
-              className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-white px-3 text-sm font-extrabold text-[#2EA9D6]"
-            >
-              <Zap className="size-4 fill-current" aria-hidden="true" />
-              {nextJob ? 'Open Next' : 'View Orders'}
-            </Link>
-            {nextJob ? (
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(nextJob.address)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex min-h-[48px] items-center justify-center gap-2 rounded-2xl bg-white/15 px-3 text-sm font-extrabold text-white ring-1 ring-white/30"
-              >
-                <Route className="size-4" aria-hidden="true" />
-                Route
-              </a>
-            ) : (
-              <Link href="/technician/profile" className="inline-flex min-h-[48px] items-center justify-center rounded-2xl bg-white/15 px-3 text-sm font-extrabold text-white ring-1 ring-white/30">
-                Profile
-              </Link>
-            )}
-          </div>
-        </section>
+      <section className="mt-8 grid grid-cols-3 gap-5">
+        <Metric icon={<ClipboardClock className="size-7" />} label="Pending" value={pendingJobs.length} tone="amber" />
+        <Metric icon={<LoaderCircle className="size-7" />} label="In Progress" value={inProgressJobs.length} tone="blue" />
+        <Metric icon={<CheckCircle2 className="size-7" />} label="Done" value={completedJobs.length} tone="green" />
+      </section>
 
-        <section className="mt-5 grid grid-cols-2 gap-3">
-          <HighlightMetric icon={<BadgeDollarSign className="size-5" />} label="Completed Value" value={`৳${completedValue.toLocaleString('en')}`} helper="Recent completed" />
-          <HighlightMetric icon={<BriefcaseBusiness className="size-5" />} label="Total Orders" value={(jobs.length + completedJobs.length).toString()} helper={`${todayJobs.length} today`} />
-        </section>
+      {delayedJobs.length > 0 ? (
+        <Link href="/technician/jobs?view=delayed" className="mt-6 block rounded-2xl border border-amber-200 bg-amber-50 p-4 text-base font-black text-amber-800">
+          {delayedJobs.length} delayed {delayedJobs.length === 1 ? 'job needs' : 'jobs need'} attention
+        </Link>
+      ) : null}
 
-        <section className="mt-5 grid grid-cols-3 gap-3">
-          <SmallMetric icon={<Hourglass className="size-4" />} label="Pending" value={pendingJobs.length} tone="amber" />
-          <SmallMetric icon={<LoaderCircle className="size-4" />} label="In Progress" value={inProgressJobs.length} tone="sky" />
-          <SmallMetric icon={<CheckCircle2 className="size-4" />} label="Done" value={completedJobs.length} tone="emerald" />
-        </section>
-
-        {nextJob ? (
-          <section className="mt-6 rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Next action</p>
-                <h2 className="mt-1 text-lg font-extrabold text-[#0B2A4A]">{nextJob.customer_name}</h2>
-              </div>
-              <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold capitalize text-[#2EA9D6]">{formatStatus(nextJob.status)}</span>
-            </div>
-            <div className="mt-4 grid gap-2 text-sm font-semibold text-slate-600">
-              <Info icon={<Clock3 className="size-4" />} text={`${formatDate(nextJob.preferred_date)} / ${nextJob.preferred_time}`} />
-              <Info icon={<MapPin className="size-4" />} text={nextJob.address} />
-            </div>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <a href={`tel:${nextJob.customer_phone}`} className="inline-flex min-h-[46px] items-center justify-center gap-2 rounded-2xl border border-slate-200 text-sm font-extrabold text-[#0B2A4A]">
-                <Phone className="size-4 text-[#2EA9D6]" aria-hidden="true" />
-                Call
-              </a>
-              <Link href={`/technician/jobs/${nextJob.order_id}`} className="inline-flex min-h-[46px] items-center justify-center rounded-2xl bg-[#0B2A4A] text-sm font-extrabold text-white">
-                View Details
-              </Link>
-            </div>
-          </section>
-        ) : null}
-
-        <section className="mt-7">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-extrabold text-[#0B2A4A]">Order List</h2>
-            <Link href="/technician/jobs" className="text-sm font-extrabold text-[#2EA9D6]">
-              See All
-            </Link>
-          </div>
-          <div className="mt-4 space-y-4">
-            {dashboardJobs.map((job) => (
-              <TechnicianJobCard key={job.id} job={job} />
-            ))}
-            {dashboardJobs.length === 0 ? <EmptyPanel title="No active orders" text="Assigned jobs will appear here." /> : null}
-          </div>
-        </section>
-
-        <footer className="mt-8 pb-3 text-center">
-          <div className="inline-flex items-center gap-2 text-sm font-extrabold text-[#0B2A4A]">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-[#2EA9D6] text-white">
-              <Zap className="size-4 fill-current" aria-hidden="true" />
-            </span>
-            Your Lucky Services
-          </div>
-          <p className="mt-1 text-xs font-semibold text-slate-400">2026 Technician Dashboard</p>
-        </footer>
-      </div>
+      <section className="mt-9">
+        <div className="flex items-center justify-between">
+          <h2 className="text-[28px] font-black leading-9 text-[#000D32]">Order List</h2>
+          <Link href="/technician/jobs" className="text-lg font-black text-[#00677D]">
+            See All
+          </Link>
+        </div>
+        <div className="mt-5 space-y-6">
+          {orderPreview.map((job) => (
+            <TechnicianJobCard key={job.id} job={job} compact />
+          ))}
+          {orderPreview.length === 0 ? (
+            <TechnicianCard className="p-8 text-center">
+              <CheckCircle2 className="mx-auto size-10 text-emerald-500" aria-hidden="true" />
+              <h3 className="mt-3 text-xl font-black text-[#000D32]">No assigned jobs</h3>
+              <p className="mt-2 text-base font-medium text-[#64748B]">New work appears here after admin assigns it.</p>
+            </TechnicianCard>
+          ) : null}
+        </div>
+      </section>
     </TechnicianShell>
   );
 }
 
-function HighlightMetric({ icon, label, value, helper }: { icon: React.ReactNode; label: string; value: string; helper: string }) {
-  return (
-    <div className="rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="flex size-10 items-center justify-center rounded-2xl bg-[#F0F9FC] text-[#2EA9D6]">{icon}</div>
-      <p className="mt-4 text-xs font-bold text-slate-500">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{value}</p>
-      <p className="mt-2 text-xs font-bold text-[#2EA9D6]">{helper}</p>
-    </div>
-  );
-}
-
-function SmallMetric({
+function Metric({
   icon,
   label,
   value,
@@ -178,54 +99,30 @@ function SmallMetric({
   icon: React.ReactNode;
   label: string;
   value: number;
-  tone: 'amber' | 'sky' | 'emerald';
+  tone: 'amber' | 'blue' | 'green';
 }) {
   const tones = {
-    amber: 'bg-amber-50 text-amber-500',
-    sky: 'bg-sky-50 text-[#2EA9D6]',
-    emerald: 'bg-emerald-50 text-emerald-500'
+    amber: 'bg-amber-50 text-amber-700',
+    blue: 'bg-blue-50 text-blue-700',
+    green: 'bg-emerald-50 text-emerald-700'
   };
 
   return (
-    <div className="rounded-[18px] border border-slate-100 bg-white p-4 text-center shadow-sm">
-      <div className={`mx-auto flex size-9 items-center justify-center rounded-2xl ${tones[tone]}`}>{icon}</div>
-      <p className="mt-3 text-xl font-extrabold text-[#0B2A4A]">{value}</p>
-      <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
-    </div>
+    <TechnicianCard className="p-5 text-center">
+      <div className={`mx-auto flex size-14 items-center justify-center rounded-2xl ${tones[tone]}`}>{icon}</div>
+      <p className="mt-5 text-[36px] font-black leading-none text-[#000D32]">{value}</p>
+      <p className="mt-3 text-sm font-black uppercase tracking-[0.08em] text-[#64748B]">{label}</p>
+    </TechnicianCard>
   );
 }
 
-function Info({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <p className="flex items-start gap-2">
-      <span className="mt-0.5 shrink-0 text-[#2EA9D6]">{icon}</span>
-      <span className="line-clamp-2">{text}</span>
-    </p>
-  );
+function firstName(value: string) {
+  return value.split(' ').filter(Boolean)[0] || value;
 }
 
-function EmptyPanel({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-[20px] border border-dashed border-slate-200 bg-white p-6 text-center">
-      <CheckCircle2 className="mx-auto size-9 text-emerald-500" aria-hidden="true" />
-      <h3 className="mt-3 text-lg font-bold text-[#0B2A4A]">{title}</h3>
-      <p className="mt-1 text-sm font-medium text-slate-500">{text}</p>
-    </div>
-  );
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value));
-}
-
-function formatStatus(status: string) {
-  if (status === 'assigned') return 'pending';
-  return status.replaceAll('_', ' ');
-}
-
-function getGreeting() {
+function getDayPart() {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good Morning';
-  if (hour < 17) return 'Good Afternoon';
-  return 'Good Evening';
+  if (hour < 12) return 'Morning';
+  if (hour < 17) return 'Afternoon';
+  return 'Evening';
 }

@@ -1,83 +1,54 @@
 import Link from 'next/link';
-import { CalendarClock, Fan, MapPin, Monitor, Snowflake, Wrench } from 'lucide-react';
+import { CalendarClock, MapPin, UserRound } from 'lucide-react';
+import { formatDateShort, formatTaka, getTechnicianStatusStyle, isDelayedJob, TechnicianCard, TechnicianStatusBadge } from '@/components/technician/TechnicianUI';
 import type { BookingRow } from '@/features/bookings/queries';
 
-const statusStyles: Record<string, string> = {
-  assigned: 'bg-amber-50 text-amber-600',
-  accepted: 'bg-sky-50 text-[#2EA9D6]',
-  on_the_way: 'bg-sky-50 text-[#2EA9D6]',
-  in_progress: 'bg-sky-50 text-[#2EA9D6]',
-  completed: 'bg-emerald-50 text-emerald-600',
-  cancelled: 'bg-rose-50 text-rose-600'
-};
-
 export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; compact?: boolean }) {
-  const serviceTitle = job.services?.title || job.service_id || 'General Inquiry';
-  const price = job.final_price ? `৳${job.final_price.toLocaleString('en')}` : '৳ TBD';
-  const statusLabel = formatStatus(job.status);
-  const Icon = getServiceIcon(job.service_id || serviceTitle);
-  const disabled = ['completed', 'cancelled'].includes(job.status);
+  const serviceTitle = job.services?.title || job.service_id || 'General Service';
+  const delayed = isDelayedJob(job.preferred_date, job.status);
+  const visualStatus = delayed ? 'delayed' : job.status;
+  const status = getTechnicianStatusStyle(visualStatus);
+  const actionLabel = job.status === 'completed' ? 'Receipt' : 'View Details';
+  const href = job.status === 'completed' ? `/technician/jobs/${job.order_id}/receipt` : `/technician/jobs/${job.order_id}`;
 
   return (
-    <Link
-      href={`/technician/jobs/${job.order_id}`}
-      className="block rounded-[20px] border border-slate-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-[#2EA9D6] hover:shadow-md"
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 gap-3">
-          <div className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${disabled ? 'bg-emerald-50 text-emerald-500' : 'bg-[#F0F9FC] text-[#2EA9D6]'}`}>
-            <Icon className="size-5" aria-hidden="true" />
-          </div>
+    <TechnicianCard accent={status.accent} className="p-0">
+      <div className="p-6 pl-8">
+        <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h3 className="truncate text-base font-extrabold text-[#0B2A4A]">{serviceTitle}</h3>
-            <p className="mt-1 text-xs font-semibold text-slate-400">Order #{job.order_id}</p>
+            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#64748B]">{job.order_id}</p>
+            <h3 className="mt-2 line-clamp-2 text-[28px] font-black leading-8 tracking-normal text-[#000D32]">{serviceTitle}</h3>
           </div>
+          <TechnicianStatusBadge status={visualStatus} />
         </div>
-        <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-extrabold capitalize ${statusStyles[job.status] || 'bg-slate-100 text-slate-500'}`}>
-          {statusLabel}
-        </span>
-      </div>
 
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-slate-500">
-        <Info icon={<MapPin className="size-4" />} text={job.address} />
-        <Info icon={<CalendarClock className="size-4" />} text={compact ? formatDate(job.preferred_date) : job.preferred_time} />
-      </div>
+        <div className="mt-5 grid gap-3 border-b border-slate-200 pb-5 text-[16px] font-medium leading-6 text-[#64748B]">
+          <p className="flex items-start gap-3">
+            <CalendarClock className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <span>{compact ? formatDateShort(job.preferred_date) : `${job.preferred_time}, ${formatDateShort(job.preferred_date)}`}</span>
+          </p>
+          <p className="flex items-start gap-3">
+            <MapPin className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+            <span className="line-clamp-2">{job.address}</span>
+          </p>
+          <p className="flex items-center gap-3">
+            <UserRound className="size-5 shrink-0" aria-hidden="true" />
+            <span>{job.customer_name}</span>
+          </p>
+        </div>
 
-      <div className="mt-4 border-t border-slate-100 pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-lg font-extrabold text-[#0B2A4A]">{price}</p>
-          <span className={`inline-flex min-h-[42px] items-center rounded-2xl px-4 text-sm font-extrabold ${disabled ? 'bg-slate-100 text-slate-400' : 'bg-[#0B2A4A] text-white'}`}>
-            View Details
-          </span>
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <p className="text-[26px] font-black tracking-normal text-[#000D32]">{formatTaka(job.final_price)}</p>
+          <Link
+            href={href}
+            className={`inline-flex min-h-14 min-w-[150px] items-center justify-center rounded-xl px-5 text-base font-black tracking-normal transition ${
+              job.status === 'completed' ? 'bg-[#50D9FE] text-[#00677D] hover:bg-[#4CD6FB]' : 'bg-[#000D32] text-white hover:bg-[#12234D]'
+            }`}
+          >
+            {actionLabel}
+          </Link>
         </div>
       </div>
-    </Link>
+    </TechnicianCard>
   );
-}
-
-function Info({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <span className="inline-flex min-w-0 items-center gap-1">
-      <span className="shrink-0 text-slate-400">{icon}</span>
-      <span className="max-w-[220px] truncate">{text}</span>
-    </span>
-  );
-}
-
-function getServiceIcon(value: string) {
-  const normalized = value.toLowerCase();
-  if (normalized.includes('ac')) return Snowflake;
-  if (normalized.includes('fan') || normalized.includes('hood')) return Fan;
-  if (normalized.includes('tv')) return Monitor;
-  return Wrench;
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(new Date(value));
-}
-
-function formatStatus(value: string) {
-  if (value === 'assigned') return 'pending';
-  if (value === 'on_the_way') return 'on way';
-  return value.replaceAll('_', ' ');
 }

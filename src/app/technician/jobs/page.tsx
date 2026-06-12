@@ -1,75 +1,94 @@
 import Link from 'next/link';
-import { CalendarDays, CheckCircle2, ListChecks } from 'lucide-react';
+import { CheckCircle2, Search, SlidersHorizontal } from 'lucide-react';
 import { TechnicianJobCard } from '@/components/technician/TechnicianJobCard';
 import { TechnicianShell } from '@/components/technician/TechnicianShell';
-import { getTechnicianCompletedJobs, getTechnicianJobs } from '@/features/bookings/queries';
+import { isDelayedJob, TechnicianCard } from '@/components/technician/TechnicianUI';
+import { getTechnicianAllJobs } from '@/features/bookings/queries';
 import { requireRole } from '@/lib/auth/session';
 
-export default async function TechnicianJobsPage({ searchParams }: { searchParams?: Promise<{ view?: string }> }) {
+export default async function TechnicianJobsPage({ searchParams }: { searchParams?: Promise<{ view?: string; q?: string }> }) {
   const params = await searchParams;
-  const view = params?.view || 'active';
+  const view = params?.view || 'all';
+  const query = (params?.q || '').trim().toLowerCase();
   const profile = await requireRole(['technician']);
-  const [activeJobs, completedJobs] = await Promise.all([getTechnicianJobs(profile.id), getTechnicianCompletedJobs(profile.id, 50)]);
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const todayJobs = activeJobs.filter((job) => job.preferred_date === todayKey);
-  const visibleJobs = view === 'completed' ? completedJobs : view === 'today' ? todayJobs : activeJobs;
+  const allJobs = await getTechnicianAllJobs(profile.id, 100);
+
+  const filteredByView = allJobs.filter((job) => {
+    if (view === 'active') return ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(job.status);
+    if (view === 'completed') return job.status === 'completed';
+    if (view === 'delayed') return isDelayedJob(job.preferred_date, job.status);
+    return true;
+  });
+
+  const visibleJobs = filteredByView.filter((job) => {
+    if (!query) return true;
+    return [job.order_id, job.customer_name, job.customer_phone, job.address, job.services?.title, job.service_id, job.status]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
+  });
+
+  const counts = {
+    all: allJobs.length,
+    active: allJobs.filter((job) => ['assigned', 'accepted', 'on_the_way', 'in_progress'].includes(job.status)).length,
+    delayed: allJobs.filter((job) => isDelayedJob(job.preferred_date, job.status)).length,
+    completed: allJobs.filter((job) => job.status === 'completed').length
+  };
 
   return (
-    <TechnicianShell>
-      <div className="mx-auto w-full max-w-[470px]">
-        <section className="rounded-[22px] border border-slate-100 bg-white p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Order list</p>
-          <div className="mt-2">
-            <h1 className="text-2xl font-extrabold text-[#0B2A4A]">Assigned work orders</h1>
-            <p className="mt-1 text-sm font-medium leading-6 text-slate-500">Filter your active work, today schedule, and completed jobs.</p>
-          </div>
-          <div className="mt-5 grid grid-cols-3 gap-1 rounded-2xl bg-slate-50 p-1 text-sm font-semibold">
-            <Tab href="/technician/jobs" active={view === 'active'} icon={<ListChecks className="size-4" />} label="Active" count={activeJobs.length} />
-            <Tab href="/technician/jobs?view=today" active={view === 'today'} icon={<CalendarDays className="size-4" />} label="Today" count={todayJobs.length} />
-            <Tab href="/technician/jobs?view=completed" active={view === 'completed'} icon={<CheckCircle2 className="size-4" />} label="Done" count={completedJobs.length} />
-          </div>
-        </section>
+    <TechnicianShell title="LSC" showMenu>
+      <h1 className="text-[44px] font-black leading-[52px] tracking-normal text-[#000D32]">All Orders</h1>
 
-        <section className="mt-5 space-y-4">
-          {visibleJobs.map((job) => (
-            <TechnicianJobCard key={job.id} job={job} />
-          ))}
-          {visibleJobs.length === 0 ? (
-            <div className="rounded-[20px] border border-dashed border-slate-200 bg-white p-8 text-center">
-              <CheckCircle2 className="mx-auto size-9 text-emerald-500" aria-hidden="true" />
-              <h2 className="mt-3 text-lg font-bold text-[#0B2A4A]">No jobs in this view</h2>
-              <p className="mt-1 text-sm font-medium text-slate-500">When admin assigns or completes work, it will appear here.</p>
-            </div>
-          ) : null}
-        </section>
+      <form className="mt-6 flex gap-3" action="/technician/jobs">
+        <input type="hidden" name="view" value={view} />
+        <label className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-7 -translate-y-1/2 text-[#64748B]" aria-hidden="true" />
+          <input
+            name="q"
+            defaultValue={params?.q || ''}
+            placeholder="Search by ID, Customer, or Service"
+            className="min-h-16 w-full rounded-xl border border-slate-200 bg-[#E9F0F8] py-3 pl-14 pr-4 text-[20px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
+          />
+        </label>
+        <button type="submit" className="flex size-16 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-[#000D32] shadow-sm" aria-label="Apply search">
+          <SlidersHorizontal className="size-7" aria-hidden="true" />
+        </button>
+      </form>
+
+      <div className="mt-5 flex gap-2 overflow-x-auto pb-1">
+        <FilterChip href="/technician/jobs" active={view === 'all'} label="All" count={counts.all} />
+        <FilterChip href="/technician/jobs?view=active" active={view === 'active'} label="Active" count={counts.active} />
+        <FilterChip href="/technician/jobs?view=delayed" active={view === 'delayed'} label="Delayed" count={counts.delayed} />
+        <FilterChip href="/technician/jobs?view=completed" active={view === 'completed'} label="Completed" count={counts.completed} />
       </div>
+
+      <section className="mt-7 space-y-6">
+        {visibleJobs.map((job) => (
+          <TechnicianJobCard key={job.id} job={job} />
+        ))}
+        {visibleJobs.length === 0 ? (
+          <TechnicianCard className="p-10 text-center">
+            <CheckCircle2 className="mx-auto size-12 text-emerald-500" aria-hidden="true" />
+            <h2 className="mt-4 text-2xl font-black text-[#000D32]">No orders found</h2>
+            <p className="mt-2 text-base font-medium text-[#64748B]">Try another search or filter.</p>
+          </TechnicianCard>
+        ) : null}
+      </section>
     </TechnicianShell>
   );
 }
 
-function Tab({
-  href,
-  active,
-  icon,
-  label,
-  count
-}: {
-  href: string;
-  active: boolean;
-  icon: React.ReactNode;
-  label: string;
-  count: number;
-}) {
+function FilterChip({ href, active, label, count }: { href: string; active: boolean; label: string; count: number }) {
   return (
     <Link
       href={href}
-      className={`inline-flex min-h-[42px] items-center justify-center gap-1 rounded-xl px-2 transition sm:gap-2 sm:px-3 ${
-        active ? 'bg-white text-[#0B2A4A] shadow-sm' : 'text-slate-500 hover:bg-white hover:text-[#0B2A4A]'
+      className={`inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 text-sm font-black transition ${
+        active ? 'bg-[#000D32] text-white' : 'border border-slate-200 bg-white text-[#64748B]'
       }`}
     >
-      <span className={active ? 'text-[#2EA9D6]' : 'text-slate-400'}>{icon}</span>
-      <span>{label}</span>
-      <span className="rounded-full bg-[#EAF8FD] px-2 py-0.5 text-[11px] font-bold text-[#0B2A4A]">{count}</span>
+      {label}
+      <span className={active ? 'text-white/75' : 'text-[#00677D]'}>{count}</span>
     </Link>
   );
 }
