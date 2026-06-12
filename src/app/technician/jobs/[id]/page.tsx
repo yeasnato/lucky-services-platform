@@ -77,7 +77,7 @@ export default async function TechnicianJobPage({ params }: { params: Promise<{ 
                 <MessageSquareText className="size-4" aria-hidden="true" />
                 Customer notes
               </p>
-              <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-6 text-gray-600">{job.notes || 'No customer notes were added.'}</p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-gray-600">{job.notes || 'No customer notes were added.'}</p>
             </div>
           </div>
         </section>

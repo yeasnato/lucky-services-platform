@@ -139,7 +139,7 @@ export default async function BookingDetailPage({
                   <MessageSquareText className="size-4" aria-hidden="true" />
                   Customer notes
                 </p>
-                <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-6 text-slate-600">{booking.notes || 'No customer notes were added.'}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{booking.notes || 'No customer notes were added.'}</p>
               </div>
             </div>
           </section>
