@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
@@ -14,13 +14,12 @@ export function LoginForm({
   const router = useRouter();
   const searchParams = useSearchParams();
   const storageKey = useMemo(() => `lucky:${allowedRole || 'staff'}:last-email`, [allowedRole]);
-  const [emailValue, setEmailValue] = useState('');
+  const [emailValue, setEmailValue] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return window.localStorage.getItem(storageKey) || '';
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setEmailValue(window.localStorage.getItem(storageKey) || '');
-  }, [storageKey]);
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,6 +88,7 @@ export function LoginForm({
           name="email"
           type="email"
           value={emailValue}
+          suppressHydrationWarning
           onChange={(event) => setEmailValue(event.target.value)}
           className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:ring-2 focus:ring-[#2EA9D6]/20"
           placeholder="admin@example.com"

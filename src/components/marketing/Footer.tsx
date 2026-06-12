@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MapPin, Phone, ShieldCheck } from 'lucide-react';
+import { MapPin, ShieldCheck } from 'lucide-react';
 import { business } from '@/data/business';
 import { serviceCategories } from '@/data/services';
 import { Logo } from './Logo';

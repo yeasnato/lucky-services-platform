@@ -5,7 +5,6 @@ import { BookingQuickAction, getActiveBookingCounts } from '@/components/admin/B
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { getAdminBookings, getBookingQueueCounts } from '@/features/bookings/queries';
-import type { BookingRow } from '@/features/bookings/queries';
 import { getTechnicians } from '@/features/technicians/queries';
 import { requireRole } from '@/lib/auth/session';
 

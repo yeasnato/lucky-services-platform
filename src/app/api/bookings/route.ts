@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ orderId, bookingId: data.id, whatsappUrl });
-  } catch (error) {
+  } catch {
     if (process.env.NODE_ENV !== 'production') {
       return NextResponse.json({
         orderId,
