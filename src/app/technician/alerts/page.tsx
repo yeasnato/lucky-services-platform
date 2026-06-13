@@ -13,7 +13,7 @@ export default async function TechnicianAlertsPage() {
   return (
     <TechnicianShell title="Complaints" backHref="/technician/dashboard">
       {issueJobs.length > 0 ? (
-        <div className="rounded-[16px] border border-red-300 bg-[#FEE2E2] p-5 text-[16px] font-medium text-[#BA1A1A]">
+        <div className="rounded-lg border border-red-300 bg-[#FEE2E2] p-5 text-[16px] font-medium text-[#BA1A1A]">
           <AlertTriangle className="mr-3 inline size-6 align-[-5px]" aria-hidden="true" />
           {issueJobs.length} open {issueJobs.length === 1 ? 'complaint needs' : 'complaints need'} attention
         </div>
@@ -25,24 +25,24 @@ export default async function TechnicianAlertsPage() {
           const serviceTitle = job.services?.title || job.service_id || 'General Service';
 
           return (
-            <TechnicianCard key={job.id} accent={delayed ? 'bg-[#EF4444]' : 'bg-[#C5C6D0]'} className="p-6 pl-7">
+            <TechnicianCard key={job.id} accent={delayed ? 'bg-[#BA1A1A]' : 'bg-[#C5C6D0]'} className="p-6 pl-7">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-[#64748B]">TKT-{job.order_id.slice(-5)}</p>
+                  <p className="text-[13px] font-medium uppercase tracking-[0.12em] text-[#45464F]">TKT-{job.order_id.slice(-5)}</p>
                   <div className="mt-3">
-                    <span className={`inline-flex min-h-7 items-center rounded-full px-3 text-[12px] font-extrabold ${delayed ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
+                    <span className={`inline-flex min-h-7 items-center rounded px-3 text-[12px] font-semibold ${delayed ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
                       ! {delayed ? 'Super Urgent' : 'Urgent'} • {delayed ? '17 min' : '2 days ago'}
                     </span>
                   </div>
                 </div>
                 <TechnicianStatusBadge status={job.status} />
               </div>
-              <h2 className="mt-6 text-[20px] font-extrabold leading-7 text-[#000D32]">{delayed ? 'Error' : 'Cooling Issue'}</h2>
+              <h2 className="mt-6 text-[20px] font-semibold leading-7 text-[#000D32]">{delayed ? 'Error' : 'Cooling Issue'}</h2>
               <p className="mt-2 text-[15px] font-medium leading-6 tracking-[0.04em] text-[#45464F]">
                 {delayed ? 'Error after service, customer reporting issue and needs update.' : lastNote(job.notes || 'Customer reported a service issue.')}
               </p>
 
-              <div className="mt-5 rounded-[16px] border border-[#E0E3E5] bg-white p-4">
+              <div className="mt-5 rounded-lg border border-[#D8DADC] bg-white p-4">
                 <Info label="Order" value={shortOrderId(job.order_id)} />
                 <Info label="Customer" value={job.customer_name} />
                 <Info label="Phone" value={job.customer_phone} />
@@ -51,7 +51,7 @@ export default async function TechnicianAlertsPage() {
                 <Info label="Service" value={serviceTitle} />
                 <Info label="Amount" value={formatTaka(job.final_price)} />
                 <Info label="Due" value={delayed ? formatTaka(500) : formatTaka(0)} tone={delayed ? 'text-red-500' : 'text-emerald-600'} />
-                <p className="mt-4 text-right text-[12px] font-extrabold text-[#64748B]">{formatComplaintDate(job.updated_at || job.preferred_date)}</p>
+                <p className="mt-4 text-right text-[12px] font-semibold text-[#45464F]">{formatComplaintDate(job.updated_at || job.preferred_date)}</p>
               </div>
 
               <div className="mt-6 grid grid-cols-2 gap-3">
@@ -71,8 +71,8 @@ export default async function TechnicianAlertsPage() {
         {issueJobs.length === 0 ? (
           <TechnicianCard className="p-10 text-center">
             <AlertTriangle className="mx-auto size-12 text-emerald-500" aria-hidden="true" />
-            <h2 className="mt-4 text-2xl font-black text-[#000D32]">No open alerts</h2>
-            <p className="mt-2 text-base font-medium text-[#64748B]">Delayed jobs and field issues will appear here.</p>
+            <h2 className="mt-4 text-2xl font-semibold text-[#000D32]">No open alerts</h2>
+            <p className="mt-2 text-base font-medium text-[#45464F]">Delayed jobs and field issues will appear here.</p>
           </TechnicianCard>
         ) : null}
       </section>
@@ -83,7 +83,7 @@ export default async function TechnicianAlertsPage() {
 function Info({ label, value, tone = 'text-[#191C1E]' }: { label: string; value: string; tone?: string }) {
   return (
     <div className="grid grid-cols-[82px_1fr] gap-3 py-2 text-[15px]">
-      <span className="font-medium text-[#64748B]">{label}</span>
+      <span className="font-medium text-[#45464F]">{label}</span>
       <span className={`text-right font-medium leading-6 ${tone}`}>{value}</span>
     </div>
   );
@@ -99,7 +99,7 @@ function lastNote(notes: string) {
 }
 
 function shortOrderId(orderId: string) {
-  return orderId.replace(/^LSC-/, 'UQ-').slice(0, 8);
+  return orderId;
 }
 
 function shortTime(value: string) {

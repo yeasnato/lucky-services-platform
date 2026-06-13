@@ -40,13 +40,13 @@ export default async function TechnicianProfilePage() {
             <div className="min-w-0">
               <h1 className="truncate text-[20px] font-bold leading-6 text-[#000D32]">{displayName}</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-[13px] font-medium tracking-[0.08em] text-[#64748B]">ID: {profile.id.slice(0, 6).toUpperCase()}</span>
+                <span className="text-[13px] font-medium tracking-[0.08em] text-[#45464F]">ID: {profile.id.slice(0, 6).toUpperCase()}</span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
                   <BadgeCheck className="size-3.5" aria-hidden="true" />
                   Verified
                 </span>
               </div>
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-bold text-[#64748B]">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-bold text-[#45464F]">
                 <span className="inline-flex items-center gap-1 rounded-full bg-[#F2F4F6] px-3 py-1">
                   <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                   {technician?.rating || '5.0'}
@@ -59,16 +59,16 @@ export default async function TechnicianProfilePage() {
         </div>
       </TechnicianCard>
 
-      <TechnicianCard accent="bg-[#50D9FE]" className="mt-10 p-7 pl-8">
-        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Contact Information</p>
+      <TechnicianCard accent="bg-[#2EA9D6]" className="mt-10 p-7 pl-8">
+        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Contact Information</p>
         <div className="mt-6 grid gap-5">
           <Contact icon={<Phone className="size-6" />} label="Phone Number" value={phone} />
           <Contact icon={<Mail className="size-6" />} label="Email Address" value="Not provided" muted />
         </div>
       </TechnicianCard>
 
-      <TechnicianCard accent="bg-blue-500" className="mt-8 p-7 pl-8">
-        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
+      <TechnicianCard accent="bg-[#2EA9D6]" className="mt-8 p-7 pl-8">
+        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#45464F]">
           <Wrench className="size-5" aria-hidden="true" />
           Assigned Categories
         </p>
@@ -78,8 +78,8 @@ export default async function TechnicianProfilePage() {
         </div>
       </TechnicianCard>
 
-      <TechnicianCard accent="bg-emerald-500" className="mt-8 p-7 pl-8">
-        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
+      <TechnicianCard accent="bg-[#059669]" className="mt-8 p-7 pl-8">
+        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#45464F]">
           <MapPin className="size-5" aria-hidden="true" />
           Assigned Areas
         </p>
@@ -90,7 +90,7 @@ export default async function TechnicianProfilePage() {
       </TechnicianCard>
 
       <section className="mt-8">
-        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Performance Overview</p>
+        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Performance Overview</p>
         <div className="mt-5 grid grid-cols-2 gap-5">
           <Performance label="Completed" value={completedJobs.length} tone="text-emerald-600" />
           <Performance label="Cancelled" value={cancelled} tone="text-red-500" />
@@ -102,7 +102,7 @@ export default async function TechnicianProfilePage() {
       <TechnicianCard className="mt-8 overflow-hidden p-0">
         <ProfileRow icon={<Settings className="size-7" />} label="Account Settings" href="/technician/profile" />
         <ProfileRow icon={<HelpCircle className="size-7" />} label="Help & Support" href={`mailto:${business.email}`} />
-        <div className="grid grid-cols-[1fr_54px] items-center border-t border-[#E0E3E5] p-5 text-red-600">
+        <div className="grid grid-cols-[1fr_54px] items-center border-t border-[#D8DADC] p-5 text-red-600">
           <div className="flex items-center gap-4">
             <LogOut className="size-7" aria-hidden="true" />
             <span className="text-[18px] font-medium">Logout</span>
@@ -117,33 +117,33 @@ export default async function TechnicianProfilePage() {
 function Contact({ icon, label, value, muted }: { icon: React.ReactNode; label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-center gap-5">
-      <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#E9F0F8] text-[#000D32]">{icon}</div>
+      <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#F2F4F6] text-[#000D32]">{icon}</div>
       <div>
-        <p className="text-[12px] font-bold text-[#64748B]">{label}</p>
-        <p className={`mt-1 text-[16px] font-bold ${muted ? 'italic text-[#64748B]' : 'text-[#191C1E]'}`}>{value}</p>
+        <p className="text-[12px] font-bold text-[#45464F]">{label}</p>
+        <p className={`mt-1 text-[16px] font-bold ${muted ? 'italic text-[#45464F]' : 'text-[#191C1E]'}`}>{value}</p>
       </div>
     </div>
   );
 }
 
 function Chip({ label, muted }: { label: string; muted?: boolean }) {
-  return <span className={`rounded-[8px] border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-2 text-[13px] font-bold ${muted ? 'text-[#64748B]' : 'text-[#191C1E]'}`}>{label}</span>;
+  return <span className={`rounded-[8px] border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-2 text-[13px] font-bold ${muted ? 'text-[#45464F]' : 'text-[#191C1E]'}`}>{label}</span>;
 }
 
 function Performance({ label, value, tone }: { label: string; value: number; tone: string }) {
   return (
     <TechnicianCard className="min-h-[132px] p-6 text-center">
       <p className={`text-[34px] font-bold leading-none ${tone}`}>{value}</p>
-      <p className="mt-4 text-[13px] font-bold text-[#64748B]">{label}</p>
+      <p className="mt-4 text-[13px] font-bold text-[#45464F]">{label}</p>
     </TechnicianCard>
   );
 }
 
 function ProfileRow({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
   return (
-    <a href={href} className="flex min-h-[72px] items-center justify-between border-t border-[#E0E3E5] p-5 transition hover:bg-[#F7F9FB] first:border-t-0">
+    <a href={href} className="flex min-h-[72px] items-center justify-between border-t border-[#D8DADC] p-5 transition hover:bg-[#F7F9FB] first:border-t-0">
       <div className="flex items-center gap-4">
-        <span className="text-[#64748B]">{icon}</span>
+        <span className="text-[#45464F]">{icon}</span>
         <span className="text-[16px] font-medium text-[#191C1E]">{label}</span>
       </div>
       <ChevronRight className="size-6 text-[#C5C6D0]" aria-hidden="true" />

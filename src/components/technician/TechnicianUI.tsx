@@ -4,43 +4,43 @@ import { cn } from '@/lib/utils';
 const statusStyles: Record<string, { label: string; chip: string; accent: string }> = {
   assigned: {
     label: 'Pending',
-    chip: 'bg-[#FFF3D8] text-[#B45309]',
-    accent: 'bg-[#F59E0B]'
+    chip: 'bg-amber-50 text-amber-700',
+    accent: 'bg-[#D97706]'
   },
   accepted: {
     label: 'Accepted',
-    chip: 'bg-[#DBEAFE] text-[#2563EB]',
-    accent: 'bg-[#3B82F6]'
+    chip: 'bg-[#D0E1FB] text-[#12234D]',
+    accent: 'bg-[#2EA9D6]'
   },
   on_the_way: {
     label: 'On The Way',
-    chip: 'bg-[#DBEAFE] text-[#2563EB]',
-    accent: 'bg-[#3B82F6]'
+    chip: 'bg-[#D0E1FB] text-[#12234D]',
+    accent: 'bg-[#2EA9D6]'
   },
   in_progress: {
     label: 'Ongoing',
-    chip: 'bg-[#DBEAFE] text-[#2563EB]',
-    accent: 'bg-[#3B82F6]'
+    chip: 'bg-[#D0E1FB] text-[#12234D]',
+    accent: 'bg-[#2EA9D6]'
   },
   completed: {
     label: 'Completed',
-    chip: 'bg-[#D1FAE5] text-[#059669]',
-    accent: 'bg-[#10B981]'
+    chip: 'bg-emerald-50 text-emerald-700',
+    accent: 'bg-[#059669]'
   },
   cancelled: {
     label: 'Cancelled',
-    chip: 'bg-[#FEE2E2] text-[#DC2626]',
-    accent: 'bg-[#EF4444]'
+    chip: 'bg-rose-50 text-rose-700',
+    accent: 'bg-[#BA1A1A]'
   },
   delayed: {
     label: 'Delayed',
-    chip: 'bg-[#FFF3D8] text-[#D97706]',
-    accent: 'bg-[#F59E0B]'
+    chip: 'bg-amber-50 text-amber-700',
+    accent: 'bg-[#D97706]'
   },
   issue: {
     label: 'Issue',
-    chip: 'bg-[#FEE2E2] text-[#DC2626]',
-    accent: 'bg-[#EF4444]'
+    chip: 'bg-rose-50 text-rose-700',
+    accent: 'bg-[#BA1A1A]'
   }
 };
 
@@ -56,7 +56,7 @@ export function TechnicianStatusBadge({ status, label }: { status: string; label
   const style = getTechnicianStatusStyle(status);
 
   return (
-    <span className={cn('inline-flex min-h-[30px] items-center rounded-full px-3 text-[11px] font-bold uppercase tracking-[0.14em]', style.chip)}>
+    <span className={cn('inline-flex min-h-[30px] items-center rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.10em]', style.chip)}>
       {label || style.label}
     </span>
   );
@@ -72,7 +72,7 @@ export function TechnicianCard({
   accent?: string;
 }) {
   return (
-    <section className={cn('relative overflow-hidden rounded-[16px] border border-[#E0E3E5] bg-white shadow-[0_4px_12px_rgba(18,35,77,0.05)]', className)}>
+    <section className={cn('relative overflow-hidden rounded-lg border border-[#D8DADC] bg-white shadow-[0_1px_2px_rgba(18,35,77,0.04)]', className)}>
       {accent ? <span className={cn('absolute inset-y-0 left-0 w-1', accent)} aria-hidden="true" /> : null}
       {children}
     </section>
@@ -88,7 +88,7 @@ export function TechnicianSectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <h2 className="text-[21px] font-bold leading-7 tracking-normal text-[#000D32]">{title}</h2>
+      <h2 className="text-[20px] font-semibold leading-7 tracking-normal text-[#000D32]">{title}</h2>
       {action}
     </div>
   );

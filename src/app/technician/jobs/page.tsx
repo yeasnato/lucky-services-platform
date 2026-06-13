@@ -37,15 +37,15 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
       <form className="mt-6 flex gap-3" action="/technician/jobs">
         <input type="hidden" name="view" value={view} />
         <label className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#64748B]" strokeWidth={2.1} aria-hidden="true" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#45464F]" strokeWidth={2.1} aria-hidden="true" />
           <input
             name="q"
             defaultValue={params?.q || ''}
             placeholder="Search ID, customer, service"
-            className="min-h-[54px] w-full rounded-[10px] border border-[#D7DEE8] bg-[#E9F0F8] py-3 pl-11 pr-3 text-[14px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
+            className="min-h-[54px] w-full rounded-[10px] border border-[#C5C6D0] bg-[#F2F4F6] py-3 pl-11 pr-3 text-[14px] font-medium text-[#000D32] outline-none transition placeholder:text-[#45464F] focus:border-[#000D32] focus:bg-white"
           />
         </label>
-        <button type="submit" className="flex size-[54px] shrink-0 items-center justify-center rounded-[10px] border border-[#E0E3E5] bg-white text-[#000D32] shadow-[0_2px_8px_rgba(18,35,77,0.08)]" aria-label="Apply search">
+        <button type="submit" className="flex size-[54px] shrink-0 items-center justify-center rounded-[10px] border border-[#D8DADC] bg-white text-[#000D32] shadow-[0_2px_8px_rgba(18,35,77,0.08)]" aria-label="Apply search">
           <SlidersHorizontal className="size-6" strokeWidth={2.2} aria-hidden="true" />
         </button>
       </form>
@@ -57,8 +57,8 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
         {visibleJobs.length === 0 ? (
           <TechnicianCard className="p-10 text-center">
             <CheckCircle2 className="mx-auto size-12 text-emerald-500" aria-hidden="true" />
-            <h2 className="mt-4 text-2xl font-black text-[#000D32]">No orders found</h2>
-            <p className="mt-2 text-base font-medium text-[#64748B]">Try another search or filter.</p>
+            <h2 className="mt-4 text-2xl font-semibold text-[#000D32]">No orders found</h2>
+            <p className="mt-2 text-base font-medium text-[#45464F]">Try another search or filter.</p>
           </TechnicianCard>
         ) : null}
       </section>

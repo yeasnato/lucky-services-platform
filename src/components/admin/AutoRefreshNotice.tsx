@@ -31,10 +31,10 @@ export function AutoRefreshNotice({ latestBookingId }: { latestBookingId?: strin
         setHasNewBooking(false);
         router.refresh();
       }}
-      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-extrabold transition ${
+      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
         hasNewBooking
           ? 'border-amber-200 bg-amber-50 text-amber-700'
-          : 'border-slate-200 bg-white text-slate-500 hover:border-[#2EA9D6] hover:text-[#0B2A4A]'
+          : 'border-slate-200 bg-white text-slate-500 hover:border-[#2EA9D6] hover:text-[#000D32]'
       }`}
     >
       <RefreshCw className="size-3.5" aria-hidden="true" />

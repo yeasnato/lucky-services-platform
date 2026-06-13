@@ -7,7 +7,7 @@ export function TechnicianPrintButton() {
     <button
       type="button"
       onClick={() => window.print()}
-      className="inline-flex min-h-[56px] w-full items-center justify-center gap-3 rounded-[16px] bg-[#000D32] text-[17px] font-medium tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(0,13,50,0.18)]"
+      className="inline-flex min-h-[56px] w-full items-center justify-center gap-3 rounded-lg bg-[#000D32] text-[17px] font-medium tracking-[0.02em] text-white shadow-[0_8px_18px_rgba(0,13,50,0.18)]"
     >
       <Download className="size-5" aria-hidden="true" />
       Download PDF Receipt

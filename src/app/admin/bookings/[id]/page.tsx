@@ -151,7 +151,7 @@ export default async function BookingDetailPage({
               <EditField icon={<Phone size={18} />} name="customerPhone" defaultValue={booking.customer_phone} placeholder="Phone number" required type="tel" />
 
               <label className="relative block md:col-span-2">
-                <span className="absolute left-4 top-3.5 text-slate-400">
+                <span className="absolute left-4 top-3.5 text-[#757680]">
                   <MapPin size={18} />
                 </span>
                 <textarea name="address" required rows={2} defaultValue={booking.address} placeholder="Address" className={fieldClassName} />
@@ -174,7 +174,7 @@ export default async function BookingDetailPage({
               <EditField icon={<Clock size={18} />} name="preferredTime" defaultValue={booking.preferred_time} required />
 
               <label className="relative block md:col-span-2">
-                <span className="absolute left-4 top-3.5 text-slate-400">
+                <span className="absolute left-4 top-3.5 text-[#757680]">
                   <FileText size={18} />
                 </span>
                 <textarea name="notes" rows={3} defaultValue={booking.notes || ''} placeholder="Notes" className={fieldClassName} />

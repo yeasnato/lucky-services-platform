@@ -82,7 +82,7 @@ export function LoginForm({
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div>
-        <label className="mb-2 block text-sm font-bold text-gray-700">Email</label>
+        <label className="mb-2 block text-sm font-semibold text-[#191C1E]">Email</label>
         <input
           required
           name="email"
@@ -90,24 +90,24 @@ export function LoginForm({
           value={emailValue}
           suppressHydrationWarning
           onChange={(event) => setEmailValue(event.target.value)}
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:ring-2 focus:ring-[#2EA9D6]/20"
+          className="w-full rounded border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-3.5 font-medium text-[#000D32] outline-none transition focus:border-[#000D32] focus:bg-white focus:ring-2 focus:ring-[#000D32]/10"
           placeholder="admin@example.com"
         />
       </div>
       <div>
-        <label className="mb-2 block text-sm font-bold text-gray-700">Password</label>
+        <label className="mb-2 block text-sm font-semibold text-[#191C1E]">Password</label>
         <input
           required
           name="password"
           type="password"
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3.5 font-medium text-[#0B2A4A] outline-none focus:border-[#2EA9D6] focus:ring-2 focus:ring-[#2EA9D6]/20"
+          className="w-full rounded border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-3.5 font-medium text-[#000D32] outline-none transition focus:border-[#000D32] focus:bg-white focus:ring-2 focus:ring-[#000D32]/10"
           placeholder="••••••••"
         />
       </div>
-      {error ? <p className="rounded-xl bg-red-50 p-3 text-sm font-bold text-red-600">{error}</p> : null}
+      {error ? <p className="rounded border border-rose-200 bg-rose-50 p-3 text-sm font-semibold text-rose-700">{error}</p> : null}
       <button
         disabled={loading}
-        className="w-full rounded-xl bg-[#2EA9D6] py-3.5 text-sm font-bold text-white shadow-lg shadow-[#2EA9D6]/20 disabled:opacity-70"
+        className="w-full rounded bg-[#000D32] py-3.5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(0,13,50,0.18)] transition hover:bg-[#12234D] disabled:opacity-70"
       >
         {loading ? 'Signing in...' : emailValue ? 'Sign in with saved email' : 'Sign In'}
       </button>

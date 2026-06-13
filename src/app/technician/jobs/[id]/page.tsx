@@ -23,11 +23,11 @@ export default async function TechnicianJobPage({
     return (
       <TechnicianShell title="Job Details" backHref="/technician/jobs">
         <TechnicianCard className="p-6">
-          <h1 className="text-xl font-black text-[#000D32]">Job could not be opened</h1>
-          <p className="mt-2 text-sm font-semibold leading-6 text-[#64748B]">
+          <h1 className="text-xl font-semibold text-[#000D32]">Job could not be opened</h1>
+          <p className="mt-2 text-sm font-semibold leading-6 text-[#45464F]">
             This job is not assigned to your technician profile, or the order is no longer active.
           </p>
-          <Link href="/technician/dashboard" className="mt-4 inline-flex min-h-12 items-center rounded-xl bg-[#000D32] px-5 text-sm font-black text-white">
+          <Link href="/technician/dashboard" className="mt-4 inline-flex min-h-12 items-center rounded-lg bg-[#000D32] px-5 text-sm font-semibold text-white">
             Back to dashboard
           </Link>
         </TechnicianCard>
@@ -45,7 +45,7 @@ export default async function TechnicianJobPage({
   return (
     <TechnicianShell title="Job Details" backHref="/technician/jobs">
       {query?.rescheduled ? (
-        <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-black text-emerald-700">
+        <div className="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
           Schedule updated successfully.
         </div>
       ) : null}
@@ -53,8 +53,8 @@ export default async function TechnicianJobPage({
       <TechnicianCard accent={status.accent} className="p-4 pl-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Order ID</p>
-            <h1 className="mt-3 text-[20px] font-extrabold leading-7 tracking-normal text-[#000D32]">{shortOrderId(job.order_id)}</h1>
+            <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Order ID</p>
+            <h1 className="mt-3 text-[20px] font-semibold leading-7 tracking-normal text-[#000D32]">{shortOrderId(job.order_id)}</h1>
           </div>
           <div className="grid gap-3 justify-items-end">
             <TechnicianStatusBadge status={job.status} />
@@ -66,9 +66,9 @@ export default async function TechnicianJobPage({
             ) : null}
           </div>
         </div>
-        <div className="mt-7 border-t border-[#E0E3E5] pt-4">
+        <div className="mt-7 border-t border-[#D8DADC] pt-4">
           <p className="flex items-center gap-3 text-[13px] font-medium tracking-[0.05em] text-[#191C1E]">
-            <CalendarClock className="size-4 text-[#64748B]" aria-hidden="true" />
+            <CalendarClock className="size-4 text-[#45464F]" aria-hidden="true" />
             Booked: {formatDetailSchedule(job.preferred_date, job.preferred_time)}
           </p>
         </div>
@@ -76,7 +76,7 @@ export default async function TechnicianJobPage({
 
       <TechnicianCard className="mt-6 p-0">
         <div
-          className="flex min-h-[142px] items-center justify-center bg-[#E9F0F8] bg-cover bg-center"
+          className="flex min-h-[142px] items-center justify-center bg-[#F2F4F6] bg-cover bg-center"
           style={{ backgroundImage: "linear-gradient(rgba(247,249,251,0.55), rgba(247,249,251,0.55)), url('https://tile.openstreetmap.org/14/12095/6924.png')" }}
         >
           <div className="flex size-14 items-center justify-center rounded-full bg-[#000D32] text-white shadow-[0_10px_20px_rgba(0,13,50,0.28)] ring-4 ring-white">
@@ -86,21 +86,21 @@ export default async function TechnicianJobPage({
         <div className="p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
-              <div className="flex size-[50px] shrink-0 items-center justify-center rounded-full bg-[#E9F0F8] text-[#000D32]">
+              <div className="flex size-[50px] shrink-0 items-center justify-center rounded-full bg-[#F2F4F6] text-[#000D32]">
                 <UserRound className="size-6" aria-hidden="true" />
               </div>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#64748B]">Customer</p>
-                <h2 className="mt-1 truncate text-[20px] font-extrabold leading-6 text-[#000D32]">{job.customer_name}</h2>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#45464F]">Customer</p>
+                <h2 className="mt-1 truncate text-[20px] font-semibold leading-6 text-[#000D32]">{job.customer_name}</h2>
               </div>
             </div>
             <a href={`tel:${job.customer_phone}`} className="flex size-[58px] shrink-0 items-center justify-center rounded-full bg-[#000D32] text-white shadow-[0_8px_16px_rgba(0,13,50,0.18)]" aria-label="Call customer">
               <Phone className="size-6" aria-hidden="true" />
             </a>
           </div>
-          <div className="mt-5 rounded-[10px] border border-[#D7DEE8] bg-[#F7F9FB] p-4">
+          <div className="mt-5 rounded-[10px] border border-[#C5C6D0] bg-[#F7F9FB] p-4">
             <p className="flex items-start gap-3 text-[13px] font-medium leading-6 tracking-[0.04em] text-[#191C1E]">
-              <MapPin className="mt-1 size-4 shrink-0 text-[#64748B]" aria-hidden="true" />
+              <MapPin className="mt-1 size-4 shrink-0 text-[#45464F]" aria-hidden="true" />
               {job.address}
             </p>
             <a
@@ -116,22 +116,22 @@ export default async function TechnicianJobPage({
       </TechnicianCard>
 
       <TechnicianCard className="mt-6 p-4">
-        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Service Summary</p>
-        <div className="mt-4 border-t border-[#E0E3E5] pt-6">
+        <p className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Service Summary</p>
+        <div className="mt-4 border-t border-[#D8DADC] pt-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="text-[18px] font-extrabold leading-7 text-[#191C1E]">{serviceTitle}</h2>
+              <h2 className="text-[18px] font-semibold leading-7 text-[#191C1E]">{serviceTitle}</h2>
               <p className="mt-3 flex items-center gap-2 text-[13px] font-medium tracking-[0.06em] text-[#191C1E]">
                 <Calendar className="size-4" aria-hidden="true" />
                 {formatShortDate(job.preferred_date)} • {shortTime(job.preferred_time)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Total Amount</p>
-              <p className="mt-2 text-[24px] font-extrabold text-[#000D32]">{formatTaka(job.final_price)}</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#45464F]">Total Amount</p>
+              <p className="mt-2 text-[24px] font-semibold text-[#000D32]">{formatTaka(job.final_price)}</p>
             </div>
           </div>
-          <div className="mt-6 rounded-[8px] bg-[#E9F0F8] p-4">
+          <div className="mt-6 rounded-[8px] bg-[#F2F4F6] p-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#000D32]">Scope of work:</p>
             <div className="mt-4 grid gap-3 text-[13px] font-medium tracking-[0.04em] text-[#191C1E]">
               <p className="flex items-center gap-3">
@@ -149,7 +149,7 @@ export default async function TechnicianJobPage({
 
       {canUpdateJob && progressActions.length > 0 ? (
         <TechnicianCard className="mt-6 p-4">
-          <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#64748B]">Job Progress</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#45464F]">Job Progress</p>
           <div className="mt-4 grid gap-3">
             {allowedActions.includes('accepted') ? (
               <StatusAction bookingId={job.id} status="accepted" label="Accept Job" pendingLabel="Accepting..." />
@@ -166,7 +166,7 @@ export default async function TechnicianJobPage({
 
       {canUpdateJob ? (
         <TechnicianCard className="mt-6 p-4">
-          <p className="border-b border-[#E0E3E5] pb-4 text-[10px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Notes</p>
+          <p className="border-b border-[#D8DADC] pb-4 text-[10px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Notes</p>
           <form action={addTechnicianJobNote} className="mt-4">
             <input type="hidden" name="bookingId" value={job.id} />
             <input type="hidden" name="noteType" value="field_note" />
@@ -175,7 +175,7 @@ export default async function TechnicianJobPage({
               required
               rows={4}
               placeholder="Add internal comments or job notes here..."
-              className="w-full rounded-[8px] border border-[#C5C6D0] bg-[#E9F0F8] p-4 text-[13px] font-medium leading-6 tracking-[0.04em] text-[#000D32] outline-none focus:border-[#000D32]"
+              className="w-full rounded-[8px] border border-[#C5C6D0] bg-[#F2F4F6] p-4 text-[13px] font-medium leading-6 tracking-[0.04em] text-[#000D32] outline-none focus:border-[#000D32]"
             />
             <SubmitButton pendingLabel="Adding note..." className="sr-only">
               Add note
@@ -186,21 +186,21 @@ export default async function TechnicianJobPage({
 
       {allowedActions.includes('completed') ? (
         <TechnicianCard className="mt-6 p-4">
-          <p className="border-b border-[#E0E3E5] pb-4 text-[10px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Complete Job</p>
+          <p className="border-b border-[#D8DADC] pb-4 text-[10px] font-medium uppercase tracking-[0.22em] text-[#45464F]">Complete Job</p>
           <form action={completeTechnicianJob} className="mt-6 space-y-6">
             <input type="hidden" name="bookingId" value={job.id} />
             <input type="hidden" name="completionNote" value="Job completed by technician." />
             <label className="block">
-              <span className="mb-3 block text-[10px] font-medium uppercase tracking-[0.18em] text-[#64748B]">Reason for price change</span>
+              <span className="mb-3 block text-[10px] font-medium uppercase tracking-[0.18em] text-[#45464F]">Reason for price change</span>
               <textarea
                 name="priceChangeReason"
                 rows={3}
                 placeholder="Explain why the final price is different..."
-                className="w-full rounded-[8px] border border-[#C5C6D0] bg-[#E9F0F8] p-4 text-[13px] font-medium leading-6 tracking-[0.04em] text-[#000D32] outline-none focus:border-[#000D32]"
+                className="w-full rounded-[8px] border border-[#C5C6D0] bg-[#F2F4F6] p-4 text-[13px] font-medium leading-6 tracking-[0.04em] text-[#000D32] outline-none focus:border-[#000D32]"
               />
             </label>
             <label className="block">
-              <span className="mb-3 block text-[10px] font-medium uppercase tracking-[0.18em] text-[#64748B]">Final amount</span>
+              <span className="mb-3 block text-[10px] font-medium uppercase tracking-[0.18em] text-[#45464F]">Final amount</span>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] font-medium text-[#000D32]">৳</span>
                 <input
@@ -209,7 +209,7 @@ export default async function TechnicianJobPage({
                   min="1"
                   required={!job.final_price}
                   defaultValue={job.final_price || ''}
-                  className="min-h-[56px] w-full rounded-[8px] border border-[#C5C6D0] bg-[#E9F0F8] pl-12 pr-4 text-[20px] font-medium text-[#000D32] outline-none focus:border-[#000D32]"
+                  className="min-h-[56px] w-full rounded-[8px] border border-[#C5C6D0] bg-[#F2F4F6] pl-12 pr-4 text-[20px] font-medium text-[#000D32] outline-none focus:border-[#000D32]"
                 />
               </div>
             </label>
@@ -225,12 +225,12 @@ export default async function TechnicianJobPage({
       ) : null}
 
       <TechnicianCard className="mt-6 p-6">
-        <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[#64748B]">Activity History</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#45464F]">Activity History</p>
         <div className="mt-4 grid gap-3">
           {events.slice(0, 4).map((event) => (
-            <div key={event.id} className="rounded-2xl bg-[#F7F9FB] p-4">
-              <p className="text-sm font-black capitalize text-[#000D32]">{event.event_type.replaceAll('_', ' ')}</p>
-              <p className="mt-1 text-sm font-medium leading-6 text-[#64748B]">{event.note || 'No note added.'}</p>
+            <div key={event.id} className="rounded-lg bg-[#F7F9FB] p-4">
+              <p className="text-sm font-semibold capitalize text-[#000D32]">{event.event_type.replaceAll('_', ' ')}</p>
+              <p className="mt-1 text-sm font-medium leading-6 text-[#45464F]">{event.note || 'No note added.'}</p>
             </div>
           ))}
         </div>
@@ -240,7 +240,7 @@ export default async function TechnicianJobPage({
 }
 
 function shortOrderId(orderId: string) {
-  return orderId.replace(/^LSC-/, 'UQ-').slice(0, 9);
+  return orderId;
 }
 
 function shortTime(value: string) {
@@ -265,7 +265,7 @@ function StatusAction({ bookingId, status, label, pendingLabel }: { bookingId: s
         await updateBookingStatus(bookingId, status);
       }}
     >
-      <SubmitButton pendingLabel={pendingLabel} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#000D32] px-5 text-base font-black text-white">
+      <SubmitButton pendingLabel={pendingLabel} className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded bg-[#000D32] px-5 text-base font-semibold text-white">
         <ClipboardCheck className="size-5" aria-hidden="true" />
         {label}
       </SubmitButton>

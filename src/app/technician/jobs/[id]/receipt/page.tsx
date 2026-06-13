@@ -29,11 +29,11 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
       <TechnicianCard accent={status.accent} className="mt-2 p-5 pl-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Order ID</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#45464F]">Order ID</p>
             <h1 className="mt-3 whitespace-nowrap text-[24px] font-bold leading-7 text-[#000D32]">{shortOrderId(job.order_id)}</h1>
           </div>
-          <span className="inline-flex min-h-[32px] shrink-0 items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#10B981]">
-            <CheckCircle2 className="size-4 fill-[#10B981] text-white" aria-hidden="true" />
+          <span className="inline-flex min-h-[32px] shrink-0 items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#059669]">
+            <CheckCircle2 className="size-4 fill-[#059669] text-white" aria-hidden="true" />
             Completed
           </span>
         </div>
@@ -47,11 +47,11 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
         <p className="text-[16px] font-medium uppercase tracking-[0.18em] text-[#45464F]">Customer Details</p>
         <div className="mt-5 border-t border-[#C5C6D0] pt-6">
           <div className="flex items-center gap-5">
-            <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#E9F0F8] text-[22px] font-extrabold text-[#000D32]">
+            <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-[#F2F4F6] text-[22px] font-semibold text-[#000D32]">
               {initials(job.customer_name)}
             </div>
             <div>
-              <h2 className="text-[24px] font-extrabold leading-8 text-[#000D32]">{job.customer_name}</h2>
+              <h2 className="text-[24px] font-semibold leading-8 text-[#000D32]">{job.customer_name}</h2>
               <p className="mt-2 flex items-center gap-2 text-[18px] font-medium leading-7 text-[#45464F]">
                 <MapPin className="size-5" aria-hidden="true" />
                 {job.address}
@@ -80,7 +80,7 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
             </div>
             <p className="shrink-0 text-right text-[20px] font-bold text-[#191C1E]">{formatTaka(partAmount).replace(' ', '')}</p>
           </div>
-          <div className="flex items-center justify-between gap-4 text-[#10B981]">
+          <div className="flex items-center justify-between gap-4 text-[#059669]">
             <p className="flex min-w-0 items-center gap-3 text-[18px] font-medium">
               <Tag className="size-5 shrink-0" aria-hidden="true" />
               Discount Applied
@@ -102,7 +102,7 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
 
       <div className="mt-10 space-y-4">
         <TechnicianPrintButton />
-        <Link href="/technician/dashboard" className="inline-flex min-h-[60px] w-full items-center justify-center rounded-[20px] border border-[#C5C6D0] text-[20px] font-medium text-[#000D32]">
+        <Link href="/technician/dashboard" className="inline-flex min-h-[60px] w-full items-center justify-center rounded border border-[#C5C6D0] text-[20px] font-medium text-[#000D32]">
           Back to Dashboard
         </Link>
       </div>
@@ -120,7 +120,7 @@ function initials(value: string) {
 }
 
 function shortOrderId(orderId: string) {
-  return orderId.replace(/^LSC-/, 'UQ-').slice(0, 9);
+  return orderId;
 }
 
 function formatReceiptDate(dateValue: string, timeValue: string) {

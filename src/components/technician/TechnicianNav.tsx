@@ -18,7 +18,7 @@ export function TechnicianNav() {
   const currentView = searchParams.get('view');
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t border-[#C5C6D0] bg-white px-2 py-2 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+    <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t border-[#D8DADC] bg-white px-2 py-2 shadow-[0_-8px_24px_rgba(18,35,77,0.08)]">
       <div className="grid grid-cols-5 gap-1">
         {navItems.map((item) => {
           const active = isActive(item.href, pathname, currentView);
@@ -32,7 +32,7 @@ export function TechnicianNav() {
             >
               <span className="relative">
                 <Icon className="size-[22px]" strokeWidth={2.2} aria-hidden="true" />
-                {item.href === '/technician/alerts' ? <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#EF4444]" /> : null}
+                {item.href === '/technician/alerts' ? <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#BA1A1A]" /> : null}
               </span>
               {item.label}
             </Link>
@@ -44,9 +44,8 @@ export function TechnicianNav() {
 }
 
 function navItemClass(href: string, active: boolean) {
-  if (!active) return 'rounded-[16px] text-[#191C1E] hover:bg-[#F2F4F6]';
-  if (href === '/technician/dashboard') return 'rounded-[16px] bg-[#000D32] text-white shadow-[0_8px_18px_rgba(0,13,50,0.18)]';
-  return 'rounded-full bg-[#50D9FE] text-[#005C70] shadow-[0_8px_18px_rgba(80,217,254,0.28)]';
+  if (!active) return 'rounded text-[#45464F] hover:bg-[#F2F4F6] hover:text-[#000D32]';
+  return 'rounded bg-[#000D32] text-white shadow-[0_8px_18px_rgba(0,13,50,0.18)]';
 }
 
 function isActive(href: string, pathname: string, currentView: string | null) {
