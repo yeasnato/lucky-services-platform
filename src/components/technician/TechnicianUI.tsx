@@ -56,7 +56,7 @@ export function TechnicianStatusBadge({ status, label }: { status: string; label
   const style = getTechnicianStatusStyle(status);
 
   return (
-    <span className={cn('inline-flex min-h-[38px] items-center rounded-full px-4 text-[13px] font-extrabold uppercase tracking-[0.14em]', style.chip)}>
+    <span className={cn('inline-flex min-h-[30px] items-center rounded-full px-3 text-[10px] font-extrabold uppercase tracking-[0.16em]', style.chip)}>
       {label || style.label}
     </span>
   );
@@ -88,7 +88,7 @@ export function TechnicianSectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <h2 className="text-[28px] font-extrabold leading-9 tracking-normal text-[#000D32]">{title}</h2>
+      <h2 className="text-[22px] font-extrabold leading-7 tracking-normal text-[#000D32]">{title}</h2>
       {action}
     </div>
   );

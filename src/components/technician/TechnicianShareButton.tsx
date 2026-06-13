@@ -9,7 +9,7 @@ export function TechnicianShareButton({ title, text }: { title: string; text: st
   return (
     <button
       type="button"
-      className="flex size-14 items-center justify-center rounded-full text-[#000D32] transition hover:bg-white"
+      className="flex size-11 items-center justify-center rounded-full text-[#000D32] transition hover:bg-white"
       aria-label="Share receipt"
       onClick={async () => {
         const url = window.location.href;
@@ -24,7 +24,7 @@ export function TechnicianShareButton({ title, text }: { title: string; text: st
         window.setTimeout(() => setCopied(false), 1800);
       }}
     >
-      <Share2 className="size-8" strokeWidth={2.8} aria-hidden="true" />
+      <Share2 className="size-6" strokeWidth={2.8} aria-hidden="true" />
       <span className="sr-only">{copied ? 'Copied' : 'Share'}</span>
     </button>
   );

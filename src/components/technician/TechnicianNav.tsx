@@ -18,8 +18,8 @@ export function TechnicianNav() {
   const currentView = searchParams.get('view');
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[#C5C6D0] bg-white px-3 py-2">
-      <div className="mx-auto grid max-w-[620px] grid-cols-5 gap-1">
+    <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-[430px] -translate-x-1/2 border-t border-[#C5C6D0] bg-white px-2 py-2 shadow-[0_-8px_24px_rgba(15,23,42,0.08)]">
+      <div className="grid grid-cols-5 gap-1">
         {navItems.map((item) => {
           const active = isActive(item.href, pathname, currentView);
           const Icon = item.icon;
@@ -28,10 +28,10 @@ export function TechnicianNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex min-h-[70px] flex-col items-center justify-center gap-1.5 text-[13px] font-medium tracking-[0.08em] transition ${navItemClass(item.href, active)}`}
+              className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-medium tracking-[0.06em] transition ${navItemClass(item.href, active)}`}
             >
               <span className="relative">
-                <Icon className="size-7" strokeWidth={2.2} aria-hidden="true" />
+                <Icon className="size-[22px]" strokeWidth={2.2} aria-hidden="true" />
                 {item.href === '/technician/alerts' ? <span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#EF4444]" /> : null}
               </span>
               {item.label}

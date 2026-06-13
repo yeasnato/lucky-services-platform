@@ -30,27 +30,27 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
 
   return (
     <TechnicianShell title="LSC" showMenu>
-      <h1 className="text-[44px] font-extrabold leading-[52px] tracking-normal text-[#000D32]">
+      <h1 className="text-[30px] font-extrabold leading-9 tracking-normal text-[#000D32]">
         {view === 'delayed' ? 'Delayed' : view === 'completed' ? 'Completed' : 'All Orders'}
       </h1>
 
-      <form className="mt-7 flex gap-3" action="/technician/jobs">
+      <form className="mt-6 flex gap-3" action="/technician/jobs">
         <input type="hidden" name="view" value={view} />
         <label className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-5 top-1/2 size-8 -translate-y-1/2 text-[#64748B]" strokeWidth={2.1} aria-hidden="true" />
+          <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#64748B]" strokeWidth={2.1} aria-hidden="true" />
           <input
             name="q"
             defaultValue={params?.q || ''}
             placeholder="Search by ID, Customer, or Service"
-            className="min-h-[68px] w-full rounded-[10px] border border-[#D7DEE8] bg-[#E9F0F8] py-3 pl-16 pr-4 text-[21px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
+            className="min-h-[54px] w-full rounded-[10px] border border-[#D7DEE8] bg-[#E9F0F8] py-3 pl-11 pr-2 text-[13px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
           />
         </label>
-        <button type="submit" className="flex size-[68px] shrink-0 items-center justify-center rounded-[10px] border border-[#E0E3E5] bg-white text-[#000D32] shadow-[0_2px_8px_rgba(18,35,77,0.08)]" aria-label="Apply search">
-          <SlidersHorizontal className="size-8" strokeWidth={2.2} aria-hidden="true" />
+        <button type="submit" className="flex size-[54px] shrink-0 items-center justify-center rounded-[10px] border border-[#E0E3E5] bg-white text-[#000D32] shadow-[0_2px_8px_rgba(18,35,77,0.08)]" aria-label="Apply search">
+          <SlidersHorizontal className="size-6" strokeWidth={2.2} aria-hidden="true" />
         </button>
       </form>
 
-      <section className="mt-10 space-y-6">
+      <section className="mt-8 space-y-5">
         {visibleJobs.map((job) => (
           <TechnicianJobCard key={job.id} job={job} />
         ))}

@@ -26,46 +26,46 @@ export default async function TechnicianDashboardPage() {
   return (
     <TechnicianShell title="LSC">
       <section>
-        <h1 className="text-[36px] font-extrabold leading-[44px] tracking-normal text-[#000D32]">Good {getDayPart()}, {firstName(displayName)}</h1>
-        <p className="mt-4 text-[22px] font-medium leading-8 text-[#64748B]">{dashboardSubtitle}</p>
+        <h1 className="text-[26px] font-extrabold leading-8 tracking-normal text-[#000D32]">Good {getDayPart()}, {firstName(displayName)}</h1>
+        <p className="mt-3 text-[16px] font-medium leading-6 text-[#64748B]">{dashboardSubtitle}</p>
       </section>
 
-      <TechnicianCard className="mt-10 bg-[#12234D] p-6 text-white shadow-[0_10px_24px_rgba(0,13,50,0.18)]">
+      <TechnicianCard className="mt-8 bg-[#12234D] p-5 text-white shadow-[0_10px_24px_rgba(0,13,50,0.18)]">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex size-16 items-center justify-center rounded-[14px] bg-white/14">
-              <WalletCards className="size-8" strokeWidth={2.2} aria-hidden="true" />
+            <div className="flex size-12 items-center justify-center rounded-[12px] bg-white/14">
+              <WalletCards className="size-6" strokeWidth={2.2} aria-hidden="true" />
             </div>
             <div>
-              <h2 className="text-[28px] font-extrabold leading-8">My Wallet</h2>
+              <h2 className="text-[22px] font-extrabold leading-7">My Wallet</h2>
             </div>
           </div>
-          <span className="rounded-full bg-white/18 px-5 py-2 text-[16px] font-extrabold">Active</span>
+          <span className="rounded-full bg-white/18 px-4 py-1.5 text-[13px] font-extrabold">Active</span>
         </div>
-        <div className="mt-8">
-          <p className="text-[16px] font-extrabold uppercase tracking-[0.12em] text-white/80">Available Balance</p>
-          <p className="mt-3 text-[48px] font-extrabold leading-none tracking-normal drop-shadow">{formatTaka(completedValue)}</p>
+        <div className="mt-7">
+          <p className="text-[13px] font-extrabold uppercase tracking-[0.12em] text-white/80">Available Balance</p>
+          <p className="mt-3 text-[38px] font-extrabold leading-none tracking-normal drop-shadow">{formatTaka(completedValue)}</p>
         </div>
-        <Link href="/technician/jobs?view=completed" className="mt-10 inline-flex min-h-[66px] w-full items-center justify-center gap-4 rounded-[12px] border border-white/25 bg-white/10 text-[20px] font-extrabold tracking-[0.08em] text-white transition hover:bg-white/15">
-          <History className="size-7" strokeWidth={2.2} aria-hidden="true" />
+        <Link href="/technician/jobs?view=completed" className="mt-8 inline-flex min-h-[54px] w-full items-center justify-center gap-3 rounded-[12px] border border-white/25 bg-white/10 text-[16px] font-extrabold tracking-[0.08em] text-white transition hover:bg-white/15">
+          <History className="size-5" strokeWidth={2.2} aria-hidden="true" />
           History
         </Link>
       </TechnicianCard>
 
-      <section className="mt-10 grid grid-cols-3 gap-5">
+      <section className="mt-8 grid grid-cols-3 gap-3">
         <Metric icon={<ClipboardClock className="size-7" />} label="Pending" value={pendingJobs.length} tone="amber" />
         <Metric icon={<LoaderCircle className="size-7" />} label="In Progress" value={inProgressJobs.length} tone="blue" />
         <Metric icon={<CheckCircle2 className="size-7" />} label="Done" value={completedJobs.length} tone="green" />
       </section>
 
-      <section className="mt-11">
+      <section className="mt-9">
         <div className="flex items-center justify-between">
-          <h2 className="text-[28px] font-extrabold leading-9 text-[#000D32]">Order List</h2>
-          <Link href="/technician/jobs" className="text-[20px] font-extrabold text-[#00677D]">
+          <h2 className="text-[22px] font-extrabold leading-7 text-[#000D32]">Order List</h2>
+          <Link href="/technician/jobs" className="text-[15px] font-extrabold text-[#00677D]">
             See All
           </Link>
         </div>
-        <div className="mt-6 space-y-7">
+        <div className="mt-5 space-y-5">
           {orderPreview.map((job) => (
             <TechnicianJobCard key={job.id} job={job} compact />
           ))}
@@ -100,10 +100,10 @@ function Metric({
   };
 
   return (
-    <TechnicianCard className="min-h-[194px] p-5 text-center">
-      <div className={`mx-auto flex size-[50px] items-center justify-center rounded-[12px] ${tones[tone]}`}>{icon}</div>
-      <p className="mt-6 text-[48px] font-extrabold leading-none text-[#000D32]">{value}</p>
-      <p className="mt-3 text-[16px] font-extrabold uppercase tracking-[0.08em] text-[#64748B]">{label}</p>
+    <TechnicianCard className="min-h-[124px] p-4 text-center">
+      <div className={`mx-auto flex size-10 items-center justify-center rounded-[10px] ${tones[tone]}`}>{icon}</div>
+      <p className="mt-4 text-[30px] font-extrabold leading-none text-[#000D32]">{value}</p>
+      <p className="mt-2 text-[11px] font-extrabold uppercase tracking-[0.08em] text-[#64748B]">{label}</p>
     </TechnicianCard>
   );
 }
