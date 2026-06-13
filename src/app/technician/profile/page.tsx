@@ -27,26 +27,26 @@ export default async function TechnicianProfilePage() {
 
   return (
     <TechnicianShell title="Profile" backHref="/technician/dashboard" titleAlign="left">
-      <TechnicianCard accent="bg-[#000D32]" className="mt-3 p-7 pl-8">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex min-w-0 items-center gap-5">
+      <TechnicianCard accent="bg-[#000D32]" className="mt-3 p-5 pl-6">
+        <div className="relative">
+          <div className="flex min-w-0 items-center gap-4 pr-9">
             <Image
               src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=160&q=80"
               alt=""
-              width={72}
-              height={72}
-              className="size-[72px] shrink-0 rounded-full border-4 border-white object-cover shadow-sm"
+              width={64}
+              height={64}
+              className="size-16 shrink-0 rounded-full border-4 border-white object-cover shadow-sm"
             />
             <div className="min-w-0">
-              <h1 className="truncate text-[22px] font-extrabold leading-7 text-[#000D32]">{displayName}</h1>
+              <h1 className="truncate text-[20px] font-bold leading-6 text-[#000D32]">{displayName}</h1>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="text-[14px] font-medium tracking-[0.08em] text-[#64748B]">ID: {profile.id.slice(0, 6).toUpperCase()}</span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-emerald-700">
+                <span className="text-[13px] font-medium tracking-[0.08em] text-[#64748B]">ID: {profile.id.slice(0, 6).toUpperCase()}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
                   <BadgeCheck className="size-3.5" aria-hidden="true" />
                   Verified
                 </span>
               </div>
-              <div className="mt-3 flex flex-wrap gap-4 text-[13px] font-extrabold text-[#64748B]">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] font-bold text-[#64748B]">
                 <span className="inline-flex items-center gap-1 rounded-full bg-[#F2F4F6] px-3 py-1">
                   <Star className="size-4 fill-amber-400 text-amber-400" aria-hidden="true" />
                   {technician?.rating || '5.0'}
@@ -55,12 +55,12 @@ export default async function TechnicianProfilePage() {
               </div>
             </div>
           </div>
-          <Pencil className="size-6 shrink-0 text-[#000D32]" aria-hidden="true" />
+          <Pencil className="absolute right-0 top-1 size-5 text-[#000D32]" aria-hidden="true" />
         </div>
       </TechnicianCard>
 
       <TechnicianCard accent="bg-[#50D9FE]" className="mt-10 p-7 pl-8">
-        <p className="text-[15px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Contact Information</p>
+        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Contact Information</p>
         <div className="mt-6 grid gap-5">
           <Contact icon={<Phone className="size-6" />} label="Phone Number" value={phone} />
           <Contact icon={<Mail className="size-6" />} label="Email Address" value="Not provided" muted />
@@ -68,7 +68,7 @@ export default async function TechnicianProfilePage() {
       </TechnicianCard>
 
       <TechnicianCard accent="bg-blue-500" className="mt-8 p-7 pl-8">
-        <p className="flex items-center gap-2 text-[15px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
+        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
           <Wrench className="size-5" aria-hidden="true" />
           Assigned Categories
         </p>
@@ -79,7 +79,7 @@ export default async function TechnicianProfilePage() {
       </TechnicianCard>
 
       <TechnicianCard accent="bg-emerald-500" className="mt-8 p-7 pl-8">
-        <p className="flex items-center gap-2 text-[15px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
+        <p className="flex items-center gap-2 text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">
           <MapPin className="size-5" aria-hidden="true" />
           Assigned Areas
         </p>
@@ -90,7 +90,7 @@ export default async function TechnicianProfilePage() {
       </TechnicianCard>
 
       <section className="mt-8">
-        <p className="text-[15px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Performance Overview</p>
+        <p className="text-[13px] font-medium uppercase tracking-[0.22em] text-[#64748B]">Performance Overview</p>
         <div className="mt-5 grid grid-cols-2 gap-5">
           <Performance label="Completed" value={completedJobs.length} tone="text-emerald-600" />
           <Performance label="Cancelled" value={cancelled} tone="text-red-500" />
@@ -119,22 +119,22 @@ function Contact({ icon, label, value, muted }: { icon: React.ReactNode; label: 
     <div className="flex items-center gap-5">
       <div className="flex size-14 shrink-0 items-center justify-center rounded-xl bg-[#E9F0F8] text-[#000D32]">{icon}</div>
       <div>
-        <p className="text-[13px] font-extrabold text-[#64748B]">{label}</p>
-        <p className={`mt-1 text-[18px] font-extrabold ${muted ? 'italic text-[#64748B]' : 'text-[#191C1E]'}`}>{value}</p>
+        <p className="text-[12px] font-bold text-[#64748B]">{label}</p>
+        <p className={`mt-1 text-[16px] font-bold ${muted ? 'italic text-[#64748B]' : 'text-[#191C1E]'}`}>{value}</p>
       </div>
     </div>
   );
 }
 
 function Chip({ label, muted }: { label: string; muted?: boolean }) {
-  return <span className={`rounded-[8px] border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-2 text-[14px] font-extrabold ${muted ? 'text-[#64748B]' : 'text-[#191C1E]'}`}>{label}</span>;
+  return <span className={`rounded-[8px] border border-[#C5C6D0] bg-[#F7F9FB] px-4 py-2 text-[13px] font-bold ${muted ? 'text-[#64748B]' : 'text-[#191C1E]'}`}>{label}</span>;
 }
 
 function Performance({ label, value, tone }: { label: string; value: number; tone: string }) {
   return (
-    <TechnicianCard className="min-h-[156px] p-8 text-center">
-      <p className={`text-[40px] font-extrabold leading-none ${tone}`}>{value}</p>
-      <p className="mt-5 text-[14px] font-extrabold text-[#64748B]">{label}</p>
+    <TechnicianCard className="min-h-[132px] p-6 text-center">
+      <p className={`text-[34px] font-bold leading-none ${tone}`}>{value}</p>
+      <p className="mt-4 text-[13px] font-bold text-[#64748B]">{label}</p>
     </TechnicianCard>
   );
 }
@@ -144,7 +144,7 @@ function ProfileRow({ icon, label, href }: { icon: React.ReactNode; label: strin
     <a href={href} className="flex min-h-[72px] items-center justify-between border-t border-[#E0E3E5] p-5 transition hover:bg-[#F7F9FB] first:border-t-0">
       <div className="flex items-center gap-4">
         <span className="text-[#64748B]">{icon}</span>
-        <span className="text-[18px] font-medium text-[#191C1E]">{label}</span>
+        <span className="text-[16px] font-medium text-[#191C1E]">{label}</span>
       </div>
       <ChevronRight className="size-6 text-[#C5C6D0]" aria-hidden="true" />
     </a>

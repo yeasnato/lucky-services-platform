@@ -35,7 +35,7 @@ export function TechnicianShell({
             <Link href={backHref || '/technician/dashboard'} className="flex size-11 items-center justify-center rounded-full text-[#000D32] transition hover:bg-slate-100" aria-label="Go back">
               <ArrowLeft className={largeHeader ? 'size-8' : 'size-5'} strokeWidth={2.4} aria-hidden="true" />
             </Link>
-            <h1 className={`truncate font-extrabold tracking-normal text-[#000D32] ${titleAlign === 'left' ? 'text-left' : 'text-center'} ${largeHeader ? 'text-[28px] leading-9' : 'text-[20px] leading-7'}`}>{title}</h1>
+            <h1 className={`truncate font-bold tracking-normal text-[#000D32] ${titleAlign === 'left' ? 'text-left' : 'text-center'} ${largeHeader ? 'text-[26px] leading-8' : 'text-[20px] leading-7'}`}>{title}</h1>
             <div className="flex justify-end">{headerAction}</div>
           </div>
         ) : (
@@ -51,7 +51,7 @@ export function TechnicianShell({
                 </div>
               )}
             </div>
-            <Link href="/technician/dashboard" className={`truncate ${showMenu ? 'text-center' : 'text-left'} text-[26px] font-extrabold leading-8 tracking-normal text-[#000D32]`}>
+            <Link href="/technician/dashboard" className={`truncate ${showMenu ? 'text-center' : 'text-left'} text-[24px] font-bold leading-8 tracking-normal text-[#000D32]`}>
               {title}
             </Link>
             <div className="flex shrink-0 items-center justify-end">

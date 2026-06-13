@@ -30,7 +30,7 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
 
   return (
     <TechnicianShell title="LSC" showMenu>
-      <h1 className="text-[30px] font-extrabold leading-9 tracking-normal text-[#000D32]">
+      <h1 className="text-[28px] font-bold leading-9 tracking-normal text-[#000D32]">
         {view === 'delayed' ? 'Delayed' : view === 'completed' ? 'Completed' : 'All Orders'}
       </h1>
 
@@ -41,8 +41,8 @@ export default async function TechnicianJobsPage({ searchParams }: { searchParam
           <input
             name="q"
             defaultValue={params?.q || ''}
-            placeholder="Search by ID, Customer, or Service"
-            className="min-h-[54px] w-full rounded-[10px] border border-[#D7DEE8] bg-[#E9F0F8] py-3 pl-11 pr-2 text-[13px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
+            placeholder="Search ID, customer, service"
+            className="min-h-[54px] w-full rounded-[10px] border border-[#D7DEE8] bg-[#E9F0F8] py-3 pl-11 pr-3 text-[14px] font-medium text-[#000D32] outline-none transition placeholder:text-[#64748B] focus:border-[#000D32] focus:bg-white"
           />
         </label>
         <button type="submit" className="flex size-[54px] shrink-0 items-center justify-center rounded-[10px] border border-[#E0E3E5] bg-white text-[#000D32] shadow-[0_2px_8px_rgba(18,35,77,0.08)]" aria-label="Apply search">

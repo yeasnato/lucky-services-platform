@@ -28,7 +28,7 @@ export function TechnicianNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-medium tracking-[0.06em] transition ${navItemClass(item.href, active)}`}
+              className={`relative flex min-h-[58px] flex-col items-center justify-center gap-1 text-[11px] font-semibold tracking-[0.04em] transition ${navItemClass(item.href, active)}`}
             >
               <span className="relative">
                 <Icon className="size-[22px]" strokeWidth={2.2} aria-hidden="true" />

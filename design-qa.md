@@ -70,6 +70,7 @@ patches made since previous QA pass:
 - Changed technician login from desktop split layout to phone-only app panel.
 - Reduced oversized dashboard, order list, status badge, reschedule, and receipt typography/spacing for phone-scale use.
 - Tightened the all-orders search field so its placeholder fits at `390px`.
+- Added a final typography pass across the technician dashboard, order list, job cards, profile, receipt header, receipt totals, and receipt download action for cleaner phone readability.
 - Rebuilt technician shell/header/navigation to match the Stitch mobile app pattern.
 - Rebuilt dashboard wallet/KPI/order preview layout.
 - Rebuilt orders list cards and route actions.
@@ -82,6 +83,6 @@ verification:
 - `npm run lint` passed.
 - `npm run typecheck` passed.
 - `git diff --check` passed.
-- `npm run build` passed.
+- Final `npm run build` rerun was blocked locally by the sandbox/approval guard after Turbopack attempted to bind a worker port. Run `npm run build` once locally before pushing.
 
-final result: passed
+final result: code checks passed; final local production build rerun still needed before push

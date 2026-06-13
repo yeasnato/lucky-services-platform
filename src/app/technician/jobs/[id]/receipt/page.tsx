@@ -26,21 +26,21 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
       largeHeader
       headerAction={<TechnicianShareButton title={`Receipt ${job.order_id}`} text={`${serviceTitle} receipt for ${job.customer_name}`} />}
     >
-      <TechnicianCard accent={status.accent} className="mt-2 p-6 pl-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-[16px] font-medium uppercase tracking-[0.18em] text-[#45464F]">Order ID</p>
-            <h1 className="mt-4 text-[26px] font-extrabold leading-8 text-[#000D32]">{shortOrderId(job.order_id)}</h1>
-            <p className="mt-6 flex items-center gap-4 text-[18px] font-medium leading-7 text-[#45464F]">
-              <CalendarDays className="size-6" aria-hidden="true" />
-              {formatReceiptDate(job.completed_at || job.updated_at || job.preferred_date, job.preferred_time)}
-            </p>
+      <TechnicianCard accent={status.accent} className="mt-2 p-5 pl-6">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#64748B]">Order ID</p>
+            <h1 className="mt-3 whitespace-nowrap text-[24px] font-bold leading-7 text-[#000D32]">{shortOrderId(job.order_id)}</h1>
           </div>
-          <span className="inline-flex min-h-[40px] items-center gap-2 rounded-full bg-[#D1FAE5] px-4 text-[13px] font-extrabold uppercase tracking-[0.08em] text-[#10B981]">
-            <CheckCircle2 className="size-5 fill-[#10B981] text-white" aria-hidden="true" />
+          <span className="inline-flex min-h-[32px] shrink-0 items-center gap-1.5 rounded-full bg-[#D1FAE5] px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#10B981]">
+            <CheckCircle2 className="size-4 fill-[#10B981] text-white" aria-hidden="true" />
             Completed
           </span>
         </div>
+        <p className="mt-5 flex items-center gap-3 text-[15px] font-medium leading-6 text-[#45464F]">
+          <CalendarDays className="size-5 shrink-0" aria-hidden="true" />
+          {formatReceiptDate(job.completed_at || job.updated_at || job.preferred_date, job.preferred_time)}
+        </p>
       </TechnicianCard>
 
       <TechnicianCard className="mt-6 p-6">
@@ -65,37 +65,37 @@ export default async function TechnicianReceiptPage({ params }: { params: Promis
         <div className="p-6">
           <p className="text-[16px] font-medium uppercase tracking-[0.18em] text-[#45464F]">Service Breakdown</p>
         </div>
-        <div className="space-y-7 border-t border-[#C5C6D0] p-6">
+        <div className="space-y-7 border-t border-[#C5C6D0] p-5">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-[20px] font-medium leading-7 text-[#191C1E]">{serviceTitle}</h2>
-              <p className="mt-2 text-[16px] font-extrabold text-[#45464F]">Base Service</p>
+            <div className="min-w-0">
+              <h2 className="text-[18px] font-medium leading-7 text-[#191C1E]">{serviceTitle}</h2>
+              <p className="mt-2 text-[14px] font-bold text-[#45464F]">Base Service</p>
             </div>
-            <p className="text-[22px] font-extrabold text-[#191C1E]">{formatTaka(total)}</p>
+            <p className="shrink-0 text-right text-[20px] font-bold text-[#191C1E]">{formatTaka(total).replace(' ', '')}</p>
           </div>
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="text-[20px] font-medium leading-7 text-[#191C1E]">Additional Part</h2>
-              <p className="mt-2 text-[16px] font-extrabold text-[#45464F]">As needed</p>
+            <div className="min-w-0">
+              <h2 className="text-[18px] font-medium leading-7 text-[#191C1E]">Additional Part</h2>
+              <p className="mt-2 text-[14px] font-bold text-[#45464F]">As needed</p>
             </div>
-            <p className="text-[22px] font-extrabold text-[#191C1E]">{formatTaka(partAmount)}</p>
+            <p className="shrink-0 text-right text-[20px] font-bold text-[#191C1E]">{formatTaka(partAmount).replace(' ', '')}</p>
           </div>
           <div className="flex items-center justify-between gap-4 text-[#10B981]">
-            <p className="flex items-center gap-3 text-[20px] font-medium">
-              <Tag className="size-6" aria-hidden="true" />
+            <p className="flex min-w-0 items-center gap-3 text-[18px] font-medium">
+              <Tag className="size-5 shrink-0" aria-hidden="true" />
               Discount Applied
             </p>
-            <p className="text-[20px] font-medium">-{formatTaka(discount)}</p>
+            <p className="shrink-0 text-[18px] font-medium">-{formatTaka(discount).replace(' ', '')}</p>
           </div>
         </div>
-        <div className="bg-[#F2F4F6] p-6">
-          <div className="flex items-center justify-between text-[18px] font-medium text-[#45464F]">
+        <div className="bg-[#F2F4F6] p-5">
+          <div className="grid gap-1 text-[15px] font-medium text-[#45464F]">
             <span>Payment Method</span>
-            <span className="font-extrabold text-[#191C1E]">Cash on Delivery</span>
+            <span className="text-[17px] font-bold text-[#191C1E]">Cash on Delivery</span>
           </div>
-          <div className="mt-8 flex items-end justify-between gap-4">
-            <p className="text-[26px] font-extrabold text-[#000D32]">Total Paid</p>
-            <p className="text-[46px] font-extrabold leading-none text-[#000D32]">{formatTaka(total + partAmount - discount).replace(' ', '')}</p>
+          <div className="mt-7 flex items-end justify-between gap-3">
+            <p className="shrink-0 text-[24px] font-bold text-[#000D32]">Total Paid</p>
+            <p className="min-w-0 text-right text-[38px] font-bold leading-none text-[#000D32]">{formatTaka(total + partAmount - discount).replace(' ', '')}</p>
           </div>
         </div>
       </TechnicianCard>
