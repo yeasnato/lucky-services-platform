@@ -12,6 +12,8 @@ export async function createTechnician(formData: FormData) {
   const email = String(formData.get('email') || '').trim();
   const phone = String(formData.get('phone') || '').trim();
   const password = String(formData.get('password') || '');
+  const primaryCategory = String(formData.get('primaryCategory') || '').trim();
+  const serviceAreaId = String(formData.get('serviceAreaId') || '').trim();
 
   if (!fullName || !email || !phone || password.length < 8) {
     redirectWithError('Name, email, phone, and a minimum 8-character password are required.');
@@ -65,6 +67,28 @@ export async function createTechnician(formData: FormData) {
 
   if (technicianError) {
     redirectWithError(technicianError.message);
+  }
+
+  if (primaryCategory) {
+    const { error: skillError } = await supabase.from('technician_skills').upsert({
+      technician_id: userId,
+      category_id: primaryCategory
+    });
+
+    if (skillError) {
+      redirectWithError(skillError.message);
+    }
+  }
+
+  if (serviceAreaId) {
+    const { error: areaError } = await supabase.from('technician_service_areas').upsert({
+      technician_id: userId,
+      area_id: serviceAreaId
+    });
+
+    if (areaError) {
+      redirectWithError(areaError.message);
+    }
   }
 
   revalidatePath('/admin/technicians');

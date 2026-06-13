@@ -26,22 +26,22 @@ export function AdminNavLinks({ pendingCount = 0, mobile = false }: { pendingCou
             href={item.href}
             className={
               mobile
-                ? `inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-xs font-bold ${
+                ? `inline-flex min-h-11 shrink-0 items-center gap-2 rounded border px-3 text-xs font-semibold ${
                     isActive
-                      ? 'border-[#2EA9D6] bg-[#F0F9FC] text-[#0B2A4A]'
-                      : 'border-slate-200 bg-white text-slate-600'
+                      ? 'border-[#000D32] bg-[#000D32] text-white'
+                      : 'border-[#D8DADC] bg-white text-[#45464F]'
                   }`
-                : `flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold transition ${
+                : `relative flex min-h-11 items-center gap-3 rounded px-3 text-sm font-semibold transition ${
                     isActive
-                      ? 'bg-[#F0F9FC] text-[#0B2A4A]'
-                      : 'text-slate-600 hover:bg-[#F0F9FC] hover:text-[#0B2A4A]'
+                      ? 'bg-[#F2F4F6] text-[#000D32] before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-[#000D32]'
+                      : 'text-[#45464F] hover:bg-[#F2F4F6] hover:text-[#000D32]'
                   }`
             }
           >
-            <item.icon className="size-4 text-[#2EA9D6]" aria-hidden="true" />
+            <item.icon className={isActive && mobile ? 'size-4 text-white' : 'size-4 text-[#2EA9D6]'} aria-hidden="true" />
             <span>{item.label}</span>
             {showBadge ? (
-              <span className="ml-auto rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-extrabold text-amber-700">
+              <span className={`ml-auto rounded-full px-2 py-0.5 text-[11px] font-semibold ${isActive && mobile ? 'bg-white text-[#000D32]' : 'bg-amber-100 text-amber-700'}`}>
                 {pendingCount}
               </span>
             ) : null}

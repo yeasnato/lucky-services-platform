@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { BadgeDollarSign, Calendar, CalendarClock, CheckCircle2, Clock, FileText, Info as InfoIcon, MapPin, MessageCircle, MessageSquareText, Navigation, Phone, Save, Trash2, User, UserRoundCheck, XCircle } from 'lucide-react';
 import { getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
 import { BookingTimeline } from '@/components/admin/BookingTimeline';
+import { AdminCard, AdminCardHeader, AdminFieldLabel, adminButtonClass, adminInputClass, formatBdt, normalizeBdPhoneDisplay } from '@/components/admin/AdminUI';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { StatusBadge } from '@/components/admin/StatusBadge';
@@ -26,12 +27,12 @@ export default async function BookingDetailPage({
   if (!booking) {
     return (
       <AdminShell title="Order could not load" eyebrow="Booking detail" description="The order link may be old, deleted, or temporarily unavailable.">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-5">
-          <p className="font-extrabold text-amber-900">This order could not be opened.</p>
-          <p className="mt-2 text-sm font-semibold text-amber-800">
+        <div className="rounded border border-amber-200 bg-amber-50 p-5">
+          <p className="font-semibold text-amber-900">This order could not be opened.</p>
+          <p className="mt-2 text-sm font-medium text-amber-800">
             Go back to the booking queue and open the order again. If it still fails, the order may have been deleted.
           </p>
-          <Link href="/admin/bookings" className="mt-4 inline-flex rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white">
+          <Link href="/admin/bookings" className={`${adminButtonClass.primary} mt-4`}>
             Back to bookings
           </Link>
         </div>
@@ -56,34 +57,32 @@ export default async function BookingDetailPage({
       <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
         <div className="space-y-6">
           {resolvedSearchParams.created === '1' ? (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-              <p className="inline-flex items-center gap-2 text-sm font-extrabold text-emerald-800">
+            <div className="rounded border border-emerald-200 bg-emerald-50 p-4">
+              <p className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-800">
                 <CheckCircle2 className="size-5" aria-hidden="true" />
                 Order created successfully
               </p>
-              <p className="mt-1 text-sm font-semibold text-emerald-700">
+              <p className="mt-1 text-sm font-medium text-emerald-700">
                 This order is pending. Confirm it first, then assign a technician.
               </p>
             </div>
           ) : null}
 
-          <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="flex flex-col gap-3 border-b border-slate-200 p-6 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Customer order</p>
-                <h2 className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{booking.order_id}</h2>
-              </div>
-              <StatusBadge status={booking.status} />
-            </div>
+          <AdminCard>
+            <AdminCardHeader
+              title={booking.order_id}
+              description="Customer order, schedule, pricing, and dispatch context."
+              action={<StatusBadge status={booking.status} />}
+            />
 
             <div className="grid gap-4 p-6 md:grid-cols-2">
               <Info label="Customer" value={booking.customer_name} />
               <Info
                 label="Phone"
                 value={
-                  <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 text-[#0B2A4A] hover:text-[#2EA9D6]">
+                  <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center gap-2 text-[#000D32] hover:text-[#00677D]">
                     <Phone className="size-4" aria-hidden="true" />
-                    {booking.customer_phone}
+                    {normalizeBdPhoneDisplay(booking.customer_phone)}
                   </a>
                 }
               />
@@ -111,7 +110,7 @@ export default async function BookingDetailPage({
                 value={
                   <span className="inline-flex items-center gap-2">
                     <BadgeDollarSign className="size-4 text-[#2EA9D6]" aria-hidden="true" />
-                    {booking.final_price ? `BDT ${booking.final_price}` : 'Not set yet'}
+                    {booking.final_price ? formatBdt(booking.final_price) : 'Not set yet'}
                   </span>
                 }
               />
@@ -119,39 +118,33 @@ export default async function BookingDetailPage({
               <Info label="Source" value={booking.source} />
             </div>
 
-            <div className="border-t border-slate-100 p-6">
+            <div className="border-t border-[#D8DADC] p-6">
               <div className="mb-4 grid gap-3 sm:grid-cols-3">
-                <a href={`tel:${booking.customer_phone}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]">
+                <a href={`tel:${booking.customer_phone}`} className={adminButtonClass.secondary}>
                   <Phone className="size-4" aria-hidden="true" />
                   Call
                 </a>
-                <a href={customerWhatsAppUrl(booking.customer_phone, booking.order_id)} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100">
+                <a href={customerWhatsAppUrl(booking.customer_phone, booking.order_id)} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-emerald-200 bg-emerald-50 px-4 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100">
                   <MessageCircle className="size-4" aria-hidden="true" />
                   WhatsApp
                 </a>
-                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]">
+                <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.address)}`} target="_blank" rel="noreferrer" className={adminButtonClass.secondary}>
                   <Navigation className="size-4" aria-hidden="true" />
                   Map
                 </a>
               </div>
-              <div className="rounded-lg bg-slate-50 p-4">
-                <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-400">
+              <div className="rounded border border-[#D8DADC] bg-[#F7F9FB] p-4">
+                <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#45464F]">
                   <MessageSquareText className="size-4" aria-hidden="true" />
                   Customer notes
                 </p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-slate-600">{booking.notes || 'No customer notes were added.'}</p>
+                <p className="mt-2 text-sm font-medium leading-6 text-[#45464F]">{booking.notes || 'No customer notes were added.'}</p>
               </div>
             </div>
-          </section>
+          </AdminCard>
 
-          <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 p-5">
-              <h3 className="inline-flex items-center gap-2 text-lg font-extrabold text-[#0B2A4A]">
-                <Save className="size-5 text-[#2EA9D6]" aria-hidden="true" />
-                Edit order
-              </h3>
-              <p className="mt-1 text-sm font-medium text-slate-500">Update customer details, schedule, service, notes, or final price.</p>
-            </div>
+          <AdminCard>
+            <AdminCardHeader title="Edit order" description="Update customer details, schedule, service, notes, or final price." icon={<Save className="size-4" aria-hidden="true" />} />
             <form action={updateBookingFields} className="grid gap-5 p-5 md:grid-cols-2">
               <input type="hidden" name="bookingId" value={booking.id} />
               <EditField icon={<User size={18} />} name="customerName" defaultValue={booking.customer_name} placeholder="Customer name" required />
@@ -165,8 +158,8 @@ export default async function BookingDetailPage({
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-bold text-slate-600">Service</span>
-                <select name="serviceId" defaultValue={booking.service_id || ''} className="min-h-[50px] w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
+                <AdminFieldLabel>Service</AdminFieldLabel>
+                <select name="serviceId" defaultValue={booking.service_id || ''} className={adminInputClass}>
                   <option value="">General inquiry</option>
                   {serviceOptions.map((service) => (
                     <option key={service.id} value={service.id}>
@@ -190,21 +183,21 @@ export default async function BookingDetailPage({
               <div className="md:col-span-2">
                 <SubmitButton
                   pendingLabel="Saving changes..."
-                  className="inline-flex min-h-[50px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA] md:w-auto"
+                  className={`${adminButtonClass.cyan} w-full md:w-auto`}
                 >
                   <Save className="size-4" aria-hidden="true" />
                   Save changes
                 </SubmitButton>
               </div>
             </form>
-          </section>
+          </AdminCard>
 
           <BookingTimeline events={events} />
         </div>
 
-        <aside className="h-fit rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <h3 className="text-lg font-extrabold text-[#0B2A4A]">Dispatch actions</h3>
-          <p className="mt-1 text-sm font-medium text-slate-500">Use this panel after calling the customer.</p>
+        <aside className="h-fit rounded-lg border border-[#D8DADC] bg-white p-5 shadow-[0_1px_2px_rgba(18,35,77,0.04)]">
+          <h3 className="text-lg font-semibold text-[#000D32]">Dispatch actions</h3>
+          <p className="mt-1 text-sm font-medium text-[#45464F]">Use this panel after calling the customer.</p>
 
           {canConfirm ? (
             <form
@@ -216,7 +209,7 @@ export default async function BookingDetailPage({
             >
               <SubmitButton
                 pendingLabel="Confirming..."
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+                className={`${adminButtonClass.cyan} w-full`}
               >
                 <CheckCircle2 className="size-4" aria-hidden="true" />
                 Confirm booking
@@ -225,19 +218,19 @@ export default async function BookingDetailPage({
           ) : null}
 
           {booking.status === 'pending' ? (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm font-semibold leading-6 text-amber-800">
+            <div className="mt-3 rounded border border-amber-200 bg-amber-50 p-3 text-sm font-medium leading-6 text-amber-800">
               <InfoIcon className="mr-1 inline size-4" aria-hidden="true" />
               Confirm this order first. The technician assignment panel will appear immediately after confirmation.
             </div>
           ) : null}
 
           {canAssign ? (
-            <form action={assignTechnician} className="mt-3 space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <form action={assignTechnician} className="mt-3 space-y-3 rounded border border-[#D8DADC] bg-[#F7F9FB] p-3">
               <input type="hidden" name="bookingId" value={booking.id} />
-              <label className="text-xs font-bold uppercase tracking-widest text-slate-400" htmlFor="technicianId">
+              <label className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#45464F]" htmlFor="technicianId">
                 {booking.assigned_technician_id ? 'Reassign technician' : 'Assign technician'}
               </label>
-              <select id="technicianId" name="technicianId" required defaultValue={booking.assigned_technician_id || ''} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]">
+              <select id="technicianId" name="technicianId" required defaultValue={booking.assigned_technician_id || ''} className={adminInputClass}>
                 <option value="">{booking.assigned_technician_id ? 'Select new technician' : 'Select technician'}</option>
                 {technicians.map((technician) => (
                   <option key={technician.id} value={technician.id}>
@@ -247,7 +240,7 @@ export default async function BookingDetailPage({
               </select>
               <SubmitButton
                 pendingLabel={booking.assigned_technician_id ? 'Reassigning...' : 'Assigning...'}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#123B64]"
+                className={`${adminButtonClass.primary} w-full`}
               >
                 <UserRoundCheck className="size-4" aria-hidden="true" />
                 {booking.assigned_technician_id ? 'Reassign technician' : 'Assign technician'}
@@ -265,7 +258,7 @@ export default async function BookingDetailPage({
             >
               <SubmitButton
                 pendingLabel="Cancelling..."
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-600 transition hover:border-rose-200 hover:text-rose-600"
+                className={`${adminButtonClass.secondary} w-full hover:border-rose-200 hover:text-rose-600`}
               >
                 <XCircle className="size-4" aria-hidden="true" />
                 Cancel booking
@@ -273,12 +266,12 @@ export default async function BookingDetailPage({
             </form>
           ) : null}
 
-          <form action={deleteBooking} className="mt-5 border-t border-slate-200 pt-5">
+          <form action={deleteBooking} className="mt-5 border-t border-[#D8DADC] pt-5">
             <input type="hidden" name="bookingId" value={booking.id} />
             <SubmitButton
               pendingLabel="Deleting..."
               confirmMessage="Delete this booking permanently? This cannot be undone."
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100"
+              className={`${adminButtonClass.danger} w-full`}
             >
               <Trash2 className="size-4" aria-hidden="true" />
               Delete order
@@ -286,7 +279,7 @@ export default async function BookingDetailPage({
           </form>
 
           {!canConfirm && !canAssign && !canCancel ? (
-            <div className="mt-5 rounded-lg bg-slate-50 p-4 text-sm font-semibold text-slate-500">
+            <div className="mt-5 rounded border border-[#D8DADC] bg-[#F7F9FB] p-4 text-sm font-medium text-[#45464F]">
               No admin action is available for this status.
             </div>
           ) : null}
@@ -298,15 +291,15 @@ export default async function BookingDetailPage({
 
 function Info({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 p-4">
-      <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
-      <div className="mt-2 font-bold text-[#0B2A4A]">{value}</div>
+    <div className="rounded border border-[#D8DADC] bg-[#F7F9FB] p-4">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#45464F]">{label}</p>
+      <div className="mt-2 font-semibold text-[#000D32]">{value}</div>
     </div>
   );
 }
 
 const fieldClassName =
-  'min-h-[50px] w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-12 pr-4 text-sm font-bold text-[#0B2A4A] outline-none transition placeholder:text-slate-400 focus:border-[#2EA9D6] focus:bg-white focus:ring-2 focus:ring-[#2EA9D6]/20';
+  'min-h-11 w-full rounded border border-[#C5C6D0] bg-[#F7F9FB] py-2 pl-11 pr-3 text-sm font-medium text-[#000D32] outline-none transition placeholder:text-[#757680] focus:border-[#000D32] focus:bg-white focus:ring-2 focus:ring-[#000D32]/10';
 
 function EditField({
   icon,
@@ -316,7 +309,7 @@ function EditField({
 }) {
   return (
     <label className="relative block">
-      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
+      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#757680]">{icon}</span>
       <input {...props} className={fieldClassName} />
     </label>
   );

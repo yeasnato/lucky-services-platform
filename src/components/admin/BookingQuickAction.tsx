@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { CheckCircle2, UserRoundCheck } from 'lucide-react';
+import { adminButtonClass, adminInputClass } from '@/components/admin/AdminUI';
 import { SubmitButton } from '@/components/admin/SubmitButton';
 import { assignTechnician, updateBookingStatus } from '@/features/bookings/actions';
 import type { BookingRow } from '@/features/bookings/queries';
@@ -29,7 +30,7 @@ export function BookingQuickAction({
       >
         <SubmitButton
           pendingLabel="Confirming..."
-          className="inline-flex min-h-[42px] w-full items-center justify-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#238FBA] md:w-auto"
+          className={`${adminButtonClass.cyan} w-full md:w-auto`}
         >
           <CheckCircle2 className="size-4" aria-hidden="true" />
           Confirm
@@ -46,14 +47,14 @@ export function BookingQuickAction({
           await assignTechnician(formData);
           if (successHref) redirect(successHref);
         }}
-        className="flex min-w-[240px] flex-col gap-2 lg:flex-row"
+        className="flex min-w-[260px] flex-col gap-2 lg:flex-row"
       >
         <input type="hidden" name="bookingId" value={booking.id} />
         <select
           name="technicianId"
           required
           defaultValue={booking.assigned_technician_id || ''}
-          className="min-h-[42px] rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#0B2A4A] outline-none focus:border-[#2EA9D6]"
+          className={adminInputClass}
         >
           <option value="">{booking.assigned_technician_id ? 'Reassign technician' : 'Assign technician'}</option>
           {technicians.map((technician) => (
@@ -64,7 +65,7 @@ export function BookingQuickAction({
         </select>
         <SubmitButton
           pendingLabel={booking.assigned_technician_id ? 'Reassigning...' : 'Assigning...'}
-          className="inline-flex min-h-[42px] items-center justify-center gap-2 rounded-lg bg-[#0B2A4A] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#123B64]"
+          className={adminButtonClass.primary}
         >
           <UserRoundCheck className="size-4" aria-hidden="true" />
           {booking.assigned_technician_id ? 'Reassign' : 'Assign'}

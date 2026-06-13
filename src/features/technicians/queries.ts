@@ -1,5 +1,6 @@
 import { hasSupabaseConfig } from '@/lib/supabase/config';
 import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase/server';
+import { serviceCategories } from '@/data/services';
 
 export interface TechnicianRow {
   id: string;
@@ -14,10 +15,30 @@ export interface TechnicianCapabilities {
   areas: string[];
 }
 
+export interface ServiceCategoryOption {
+  id: string;
+  title: string;
+}
+
+export interface ServiceAreaOption {
+  id: string;
+  name: string;
+}
+
 const mockTechnicians: TechnicianRow[] = [
   { id: 'mock-tech-1', display_name: 'Hasan Ali', phone: '01711111111', availability_status: 'available', rating: 4.8 },
   { id: 'mock-tech-2', display_name: 'Mizan Rahman', phone: '01822222222', availability_status: 'on_job', rating: 4.7 },
   { id: 'mock-tech-3', display_name: 'Rafiq Islam', phone: '01933333333', availability_status: 'available', rating: 4.9 }
+];
+
+const mockAreas: ServiceAreaOption[] = [
+  { id: 'mirpur', name: 'Mirpur' },
+  { id: 'uttara', name: 'Uttara' },
+  { id: 'dhanmondi', name: 'Dhanmondi' },
+  { id: 'gulshan', name: 'Gulshan' },
+  { id: 'banani', name: 'Banani' },
+  { id: 'mohakhali', name: 'Mohakhali' },
+  { id: 'tejgaon', name: 'Tejgaon' }
 ];
 
 export async function getTechnicians() {
@@ -102,6 +123,48 @@ export async function getTechnicianCapabilities(id: string): Promise<TechnicianC
       .map((row) => normalizeJoinValue(row.service_areas, 'name'))
       .filter(Boolean)
   };
+}
+
+export async function getServiceCategoriesForTechnicianSelect(): Promise<ServiceCategoryOption[]> {
+  if (!hasSupabaseConfig()) {
+    return serviceCategories.map((category) => ({ id: category.id, title: category.title }));
+  }
+
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    supabase = await createServerSupabaseClient();
+  }
+
+  const { data, error } = await supabase
+    .from('service_categories')
+    .select('id,title')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
+
+  if (error) return serviceCategories.map((category) => ({ id: category.id, title: category.title }));
+  return (data || []) as ServiceCategoryOption[];
+}
+
+export async function getServiceAreasForTechnicianSelect(): Promise<ServiceAreaOption[]> {
+  if (!hasSupabaseConfig()) return mockAreas;
+
+  let supabase;
+  try {
+    supabase = createServiceClient();
+  } catch {
+    supabase = await createServerSupabaseClient();
+  }
+
+  const { data, error } = await supabase
+    .from('service_areas')
+    .select('id,name')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (error) return [];
+  return (data || []) as ServiceAreaOption[];
 }
 
 type CapabilityJoinRow = {

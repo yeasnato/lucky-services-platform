@@ -3,21 +3,21 @@ import type { BookingEventRow } from '@/features/bookings/queries';
 
 export function BookingTimeline({ events }: { events: BookingEventRow[] }) {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+    <section className="rounded-lg border border-[#D8DADC] bg-white p-5 shadow-[0_1px_2px_rgba(18,35,77,0.04)]">
       <div className="flex items-center gap-2">
         <Activity className="size-5 text-[#2EA9D6]" aria-hidden="true" />
-        <h3 className="text-lg font-extrabold text-[#0B2A4A]">Activity timeline</h3>
+        <h3 className="text-lg font-semibold text-[#000D32]">Activity timeline</h3>
       </div>
       <div className="mt-5 space-y-4">
         {events.map((event) => (
           <div key={event.id} className="flex gap-3">
-            <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F0F9FC] text-[#2EA9D6]">
+            <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#D0E1FB] text-[#12234D]">
               {event.event_type === 'status_changed' ? <CheckCircle2 className="size-4" aria-hidden="true" /> : <Clock3 className="size-4" aria-hidden="true" />}
             </div>
-            <div className="min-w-0 border-b border-slate-100 pb-4 last:border-b-0">
-              <p className="text-sm font-extrabold capitalize text-[#0B2A4A]">{event.event_type.replaceAll('_', ' ')}</p>
-              <p className="mt-1 text-sm font-medium leading-6 text-slate-600">{event.note || statusCopy(event.from_status, event.to_status)}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-bold text-slate-400">
+            <div className="min-w-0 border-b border-[#D8DADC] pb-4 last:border-b-0">
+              <p className="text-sm font-semibold capitalize text-[#000D32]">{event.event_type.replaceAll('_', ' ')}</p>
+              <p className="mt-1 text-sm font-medium leading-6 text-[#45464F]">{event.note || statusCopy(event.from_status, event.to_status)}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#757680]">
                 <span>{formatDateTime(event.created_at)}</span>
                 {event.profiles ? (
                   <span className="inline-flex items-center gap-1">
@@ -29,7 +29,7 @@ export function BookingTimeline({ events }: { events: BookingEventRow[] }) {
             </div>
           </div>
         ))}
-        {events.length === 0 ? <p className="text-sm font-medium text-slate-500">No activity has been recorded yet.</p> : null}
+        {events.length === 0 ? <p className="text-sm font-medium text-[#45464F]">No activity has been recorded yet.</p> : null}
       </div>
     </section>
   );

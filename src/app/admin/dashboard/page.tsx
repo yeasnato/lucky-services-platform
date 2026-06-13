@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { ArrowRight, CheckCircle2, Clock3, ClipboardList, MapPin, Phone, Plus, UserRoundCheck, Wrench } from 'lucide-react';
+import { AlertTriangle, ArrowRight, BadgeDollarSign, BriefcaseBusiness, CheckCircle2, ClipboardList, MapPin, Phone, Plus, Wrench } from 'lucide-react';
 import { AutoRefreshNotice } from '@/components/admin/AutoRefreshNotice';
 import { BookingQuickAction, getActiveBookingCounts } from '@/components/admin/BookingQuickAction';
+import { AdminCard, AdminCardHeader, AdminMetricCard, adminButtonClass, formatBdt } from '@/components/admin/AdminUI';
 import { AdminShell } from '@/components/admin/DashboardShell';
 import { StatusBadge } from '@/components/admin/StatusBadge';
 import { requireRole } from '@/lib/auth/session';
@@ -23,57 +24,59 @@ export default async function AdminDashboardPage({
   const todayJobs = recentBookings.filter((booking) => booking.preferred_date === todayKey);
   const unassignedConfirmed = confirmedBookings.filter((booking) => !booking.assigned_technician_id);
   const availableTechnicians = technicians.filter((technician) => technician.availability_status === 'available');
-  const needsAction = stats.pending + stats.readyToAssign;
+  const completedValue = recentBookings
+    .filter((booking) => booking.status === 'completed')
+    .reduce((total, booking) => total + Number(booking.final_price || 0), 0);
   const completionRate = stats.total ? Math.round((stats.completed / stats.total) * 100) : 0;
   const activeCounts = getActiveBookingCounts(recentBookings);
   const priorityBookings = [...pendingBookings, ...unassignedConfirmed, ...fieldJobs].slice(0, 10);
   const statCards = [
     {
-      label: 'Needs action',
-      value: String(needsAction),
-      helper: 'Pending or confirmed jobs',
-      icon: Clock3,
-      accent: 'bg-amber-50 text-amber-700'
+      label: 'Total revenue',
+      value: formatBdt(completedValue),
+      helper: 'Completed job value in BDT',
+      icon: <BadgeDollarSign className="size-5" aria-hidden="true" />,
+      tone: 'info' as const
     },
     {
       label: 'Active jobs',
       value: String(stats.fieldActive + stats.readyToAssign),
       helper: `${stats.fieldActive} in field, ${stats.readyToAssign} awaiting assign`,
-      icon: UserRoundCheck,
-      accent: 'bg-sky-50 text-sky-700'
+      icon: <BriefcaseBusiness className="size-5" aria-hidden="true" />,
+      tone: 'navy' as const
+    },
+    {
+      label: 'Pending orders',
+      value: String(stats.pending),
+      helper: 'Need customer confirmation',
+      icon: <AlertTriangle className="size-5" aria-hidden="true" />,
+      tone: 'warning' as const
     },
     {
       label: 'Completed',
       value: String(stats.completed),
       helper: `${completionRate}% completion rate`,
-      icon: CheckCircle2,
-      accent: 'bg-emerald-50 text-emerald-700'
-    },
-    {
-      label: 'Today schedule',
-      value: String(todayJobs.length),
-      helper: `${availableTechnicians.length} available technicians`,
-      icon: ClipboardList,
-      accent: 'bg-[#F0F9FC] text-[#2EA9D6]'
+      icon: <CheckCircle2 className="size-5" aria-hidden="true" />,
+      tone: 'success' as const
     }
   ];
 
   return (
     <AdminShell
-      title="Operations dashboard"
+      title="Executive Overview"
       description="Review new bookings, confirm customer requests, and assign the right technician from one focused workspace."
       actions={
         <>
           <Link
             href="/admin/bookings/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-[#2EA9D6] px-3 py-2 text-sm font-bold text-white shadow-sm transition hover:bg-[#238FBA]"
+            className={adminButtonClass.cyan}
           >
             <Plus className="size-4" aria-hidden="true" />
             New order
           </Link>
           <Link
             href="/admin/bookings"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-[#0B2A4A] transition hover:border-[#2EA9D6] hover:text-[#2EA9D6]"
+            className={adminButtonClass.secondary}
           >
             Booking queue
             <ArrowRight className="size-4" aria-hidden="true" />
@@ -83,43 +86,33 @@ export default async function AdminDashboardPage({
       }
     >
       {resolvedSearchParams.action === 'updated' ? (
-        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm font-extrabold text-emerald-800">
+        <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800">
           Booking updated successfully.
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {statCards.map((stat) => (
-          <div key={stat.label} className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{stat.label}</p>
-                <p className="mt-2 text-3xl font-extrabold text-[#0B2A4A]">{stat.value}</p>
-              </div>
-              <div className={`rounded-lg p-2 ${stat.accent}`}>
-                <stat.icon className="size-5" aria-hidden="true" />
-              </div>
-            </div>
-            <p className="mt-3 text-sm font-semibold text-slate-500">{stat.helper}</p>
-          </div>
+          <AdminMetricCard key={stat.label} label={stat.label} value={stat.value} helper={stat.helper} icon={stat.icon} tone={stat.tone} />
         ))}
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
-        <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-extrabold text-[#0B2A4A]">Live booking queue</h2>
-              <p className="mt-1 text-sm font-medium text-slate-500">Newest customer requests from the website.</p>
-            </div>
-            <Link href="/admin/bookings" className="text-sm font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
+        <AdminCard>
+          <AdminCardHeader
+            title="Live Orders"
+            description="Newest customer requests from the website and phone desk."
+            icon={<ClipboardList className="size-4" aria-hidden="true" />}
+            action={
+              <Link href="/admin/bookings" className="text-sm font-semibold text-[#00677D] hover:text-[#000D32]">
               View all bookings
-            </Link>
-          </div>
+              </Link>
+            }
+          />
 
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[820px] text-left text-sm">
-              <thead className="bg-slate-50 text-xs font-bold uppercase tracking-widest text-slate-400">
+              <thead className="bg-[#F2F4F6] text-[11px] font-semibold uppercase tracking-[0.14em] text-[#45464F]">
                 <tr>
                   <th className="px-5 py-3">Order</th>
                   <th className="px-5 py-3">Service</th>
@@ -132,17 +125,17 @@ export default async function AdminDashboardPage({
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {priorityBookings.map((booking) => (
-                  <tr key={booking.id} className="transition hover:bg-[#F8FCFE]">
+                  <tr key={booking.id} className="transition hover:bg-[#F7F9FB]">
                     <td className="px-5 py-4">
-                      <p className="font-extrabold text-[#0B2A4A]">{booking.order_id}</p>
-                      <p className="mt-1 text-xs font-semibold text-slate-500">{booking.customer_name}</p>
+                      <p className="font-semibold text-[#000D32]">{booking.order_id}</p>
+                      <p className="mt-1 text-xs font-medium text-[#45464F]">{booking.customer_name}</p>
                     </td>
-                    <td className="px-5 py-4 font-bold text-slate-700">{booking.services?.title || booking.service_id || 'General Inquiry'}</td>
-                    <td className="px-5 py-4 text-slate-600">
-                      <p className="font-semibold">{formatDate(booking.preferred_date)}</p>
-                      <p className="text-xs text-slate-500">{booking.preferred_time}</p>
+                    <td className="px-5 py-4 font-semibold text-[#191C1E]">{booking.services?.title || booking.service_id || 'General Inquiry'}</td>
+                    <td className="px-5 py-4 text-[#45464F]">
+                      <p className="font-medium">{formatDate(booking.preferred_date)}</p>
+                      <p className="text-xs">{booking.preferred_time}</p>
                     </td>
-                    <td className="max-w-[220px] truncate px-5 py-4 text-slate-500">{booking.address}</td>
+                    <td className="max-w-[220px] truncate px-5 py-4 text-[#45464F]">{booking.address}</td>
                     <td className="px-5 py-4">
                       <StatusBadge status={booking.status} />
                     </td>
@@ -150,7 +143,7 @@ export default async function AdminDashboardPage({
                       <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref="/admin/dashboard?action=updated" />
                     </td>
                     <td className="px-5 py-4 text-right">
-                      <Link href={`/admin/bookings/${booking.order_id}`} className="font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
+                      <Link href={`/admin/bookings/${booking.order_id}`} className="font-semibold text-[#00677D] hover:text-[#000D32]">
                         Manage
                       </Link>
                     </td>
@@ -162,23 +155,23 @@ export default async function AdminDashboardPage({
 
           <div className="grid gap-3 p-4 md:hidden">
             {priorityBookings.map((booking) => (
-              <article key={booking.id} className="rounded-lg border border-slate-100 bg-slate-50 p-4">
+              <article key={booking.id} className="rounded border border-[#D8DADC] bg-[#F7F9FB] p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-extrabold text-[#0B2A4A]">{booking.order_id}</p>
-                    <p className="mt-1 text-xs font-semibold text-slate-500">{booking.customer_name}</p>
+                    <p className="font-semibold text-[#000D32]">{booking.order_id}</p>
+                    <p className="mt-1 text-xs font-medium text-[#45464F]">{booking.customer_name}</p>
                   </div>
                   <StatusBadge status={booking.status} />
                 </div>
-                <p className="mt-3 text-sm font-bold text-slate-700">{booking.services?.title || booking.service_id || 'General Inquiry'}</p>
-                <p className="mt-1 text-sm font-semibold text-slate-500">{formatDate(booking.preferred_date)} / {booking.preferred_time}</p>
-                <p className="mt-2 flex items-start gap-2 text-sm font-medium text-slate-500">
+                <p className="mt-3 text-sm font-semibold text-[#191C1E]">{booking.services?.title || booking.service_id || 'General Inquiry'}</p>
+                <p className="mt-1 text-sm font-medium text-[#45464F]">{formatDate(booking.preferred_date)} / {booking.preferred_time}</p>
+                <p className="mt-2 flex items-start gap-2 text-sm font-medium text-[#45464F]">
                   <MapPin className="mt-0.5 size-4 shrink-0 text-[#2EA9D6]" aria-hidden="true" />
                   <span>{booking.address}</span>
                 </p>
                 <div className="mt-4 grid gap-3">
                   <BookingQuickAction booking={booking} technicians={technicians} activeCounts={activeCounts} successHref="/admin/dashboard?action=updated" />
-                  <Link href={`/admin/bookings/${booking.order_id}`} className="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-[#0B2A4A]">
+                  <Link href={`/admin/bookings/${booking.order_id}`} className={adminButtonClass.secondary}>
                     Manage order
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
@@ -187,45 +180,45 @@ export default async function AdminDashboardPage({
             ))}
           </div>
 
-          {recentBookings.length === 0 ? (
+          {priorityBookings.length === 0 ? (
             <div className="p-8 text-center">
-              <p className="font-bold text-[#0B2A4A]">No bookings yet</p>
-              <p className="mt-1 text-sm text-slate-500">Website booking requests will appear here automatically.</p>
+              <p className="font-semibold text-[#000D32]">No bookings yet</p>
+              <p className="mt-1 text-sm text-[#45464F]">Website booking requests will appear here automatically.</p>
             </div>
           ) : null}
-        </section>
+        </AdminCard>
 
         <aside className="space-y-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-extrabold text-[#0B2A4A]">Today’s dispatch focus</h3>
+          <AdminCard className="p-5">
+            <h3 className="text-base font-semibold text-[#000D32]">Today’s dispatch focus</h3>
             <div className="mt-4 space-y-3">
               <FocusRow label="Confirm pending customers" value={stats.pending} />
               <FocusRow label="Assign confirmed jobs" value={stats.readyToAssign} />
               <FocusRow label="Monitor active field jobs" value={stats.fieldActive} />
             </div>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-extrabold text-[#0B2A4A]">Dispatch lanes</h3>
+          </AdminCard>
+          <AdminCard className="p-5">
+            <h3 className="text-base font-semibold text-[#000D32]">Dispatch lanes</h3>
             <div className="mt-4 space-y-3">
               <Lane title="Pending confirmation" count={stats.pending} tone="amber" href="/admin/bookings?status=pending" />
               <Lane title="Ready to assign" count={stats.readyToAssign} tone="sky" href="/admin/bookings?status=confirmed&unassigned=1" />
               <Lane title="In field progress" count={stats.fieldActive} tone="emerald" href="/admin/bookings?status=field" />
             </div>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h3 className="text-base font-extrabold text-[#0B2A4A]">Technician capacity</h3>
+          </AdminCard>
+          <AdminCard className="p-5">
+            <h3 className="text-base font-semibold text-[#000D32]">Technician capacity</h3>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <Capacity label="Available" value={availableTechnicians.length} />
               <Capacity label="Total" value={technicians.length} />
             </div>
-            <Link href="/admin/technicians" className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-[#2EA9D6] hover:text-[#0B2A4A]">
+            <Link href="/admin/technicians" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#00677D] hover:text-[#000D32]">
               <Wrench className="size-4" aria-hidden="true" />
               Manage team
             </Link>
-          </div>
-          <div className="rounded-lg border border-[#B9E7F5] bg-[#F0F9FC] p-5">
-            <p className="text-xs font-bold uppercase tracking-widest text-[#2EA9D6]">Operating rhythm</p>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#0B2A4A]">
+          </AdminCard>
+          <div className="rounded border border-[#B9E7F5] bg-[#F0F9FC] p-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#00677D]">Operating rhythm</p>
+            <p className="mt-2 text-sm font-medium leading-6 text-[#000D32]">
               Confirm the customer first, assign a technician second, then keep the job moving through accepted, on the way,
               in progress, and completed.
             </p>
@@ -233,53 +226,53 @@ export default async function AdminDashboardPage({
         </aside>
       </div>
 
-      <section className="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="flex flex-col gap-3 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-lg font-extrabold text-[#0B2A4A]">Today’s jobs</h2>
-            <p className="mt-1 text-sm font-medium text-slate-500">Jobs scheduled for today, sorted from newest booking data.</p>
-          </div>
-          <Link href="/admin/bookings/new" className="inline-flex items-center gap-2 rounded-lg bg-[#0B2A4A] px-4 py-2 text-sm font-bold text-white">
-            <Plus className="size-4" aria-hidden="true" />
-            Add phone order
-          </Link>
-        </div>
+      <AdminCard className="mt-6">
+        <AdminCardHeader
+          title="Today’s jobs"
+          description="Jobs scheduled for today, sorted from newest booking data."
+          action={
+            <Link href="/admin/bookings/new" className={adminButtonClass.primary}>
+              <Plus className="size-4" aria-hidden="true" />
+              Add phone order
+            </Link>
+          }
+        />
         <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
           {todayJobs.slice(0, 6).map((booking) => (
-            <Link key={booking.id} href={`/admin/bookings/${booking.order_id}`} className="rounded-lg border border-slate-100 bg-slate-50 p-4 transition hover:border-[#2EA9D6] hover:bg-white">
+            <Link key={booking.id} href={`/admin/bookings/${booking.order_id}`} className="rounded border border-[#D8DADC] bg-[#F7F9FB] p-4 transition hover:border-[#2EA9D6] hover:bg-white">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-extrabold text-[#0B2A4A]">{booking.order_id}</p>
-                  <p className="mt-1 text-sm font-bold text-slate-700">{booking.services?.title || booking.service_id || 'General Inquiry'}</p>
+                  <p className="text-sm font-semibold text-[#000D32]">{booking.order_id}</p>
+                  <p className="mt-1 text-sm font-semibold text-[#191C1E]">{booking.services?.title || booking.service_id || 'General Inquiry'}</p>
                 </div>
                 <StatusBadge status={booking.status} />
               </div>
-              <p className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+              <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#45464F]">
                 <Phone className="size-4 text-[#2EA9D6]" aria-hidden="true" />
                 {booking.customer_phone}
               </p>
-              <p className="mt-2 flex items-start gap-2 text-sm font-medium text-slate-500">
+              <p className="mt-2 flex items-start gap-2 text-sm font-medium text-[#45464F]">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-[#2EA9D6]" aria-hidden="true" />
                 <span className="line-clamp-2">{booking.address}</span>
               </p>
             </Link>
           ))}
           {todayJobs.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-slate-200 p-6 text-sm font-semibold text-slate-500">
+            <div className="rounded border border-dashed border-[#C5C6D0] p-6 text-sm font-medium text-[#45464F]">
               No jobs scheduled today.
             </div>
           ) : null}
         </div>
-      </section>
+      </AdminCard>
     </AdminShell>
   );
 }
 
 function FocusRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3">
-      <span className="text-sm font-bold text-slate-600">{label}</span>
-      <span className="text-lg font-extrabold text-[#0B2A4A]">{value}</span>
+    <div className="flex items-center justify-between rounded border border-[#D8DADC] bg-[#F7F9FB] px-4 py-3">
+      <span className="text-sm font-medium text-[#45464F]">{label}</span>
+      <span className="text-lg font-semibold text-[#000D32]">{value}</span>
     </div>
   );
 }
@@ -292,18 +285,18 @@ function Lane({ title, count, href, tone }: { title: string; count: number; href
   };
 
   return (
-    <Link href={href} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 transition hover:border-[#2EA9D6] hover:bg-white">
-      <span className="text-sm font-bold text-slate-600">{title}</span>
-      <span className={`rounded-full px-3 py-1 text-sm font-extrabold ${tones[tone]}`}>{count}</span>
+    <Link href={href} className="flex items-center justify-between rounded border border-[#D8DADC] bg-[#F7F9FB] px-4 py-3 transition hover:border-[#2EA9D6] hover:bg-white">
+      <span className="text-sm font-medium text-[#45464F]">{title}</span>
+      <span className={`rounded-full px-3 py-1 text-sm font-semibold ${tones[tone]}`}>{count}</span>
     </Link>
   );
 }
 
 function Capacity({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-lg bg-slate-50 p-3">
-      <p className="text-xs font-bold uppercase tracking-widest text-slate-400">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-[#0B2A4A]">{value}</p>
+    <div className="rounded border border-[#D8DADC] bg-[#F7F9FB] p-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#45464F]">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-[#000D32]">{value}</p>
     </div>
   );
 }
