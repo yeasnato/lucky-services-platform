@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { CalendarClock, MapPin, UserRound } from 'lucide-react';
-import { formatDateShort, formatTaka, getTechnicianStatusStyle, isDelayedJob, TechnicianCard, TechnicianStatusBadge } from '@/components/technician/TechnicianUI';
+import { formatTaka, getTechnicianStatusStyle, isDelayedJob, TechnicianCard, TechnicianStatusBadge } from '@/components/technician/TechnicianUI';
 import type { BookingRow } from '@/features/bookings/queries';
 
 export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; compact?: boolean }) {
@@ -11,37 +11,61 @@ export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; c
   const actionLabel = job.status === 'completed' ? 'Receipt' : 'View Details';
   const href = job.status === 'completed' ? `/technician/jobs/${job.order_id}/receipt` : `/technician/jobs/${job.order_id}`;
 
+  if (compact) {
+    return (
+      <TechnicianCard accent={status.accent} className="p-0">
+        <Link href={href} className="block p-8 pl-9">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-[16px] font-extrabold uppercase tracking-[0.16em] text-[#64748B]">#{shortOrderId(job.order_id).replace('UQ-', 'ORD-')}</p>
+              <h3 className="mt-4 line-clamp-1 text-[28px] font-extrabold leading-8 tracking-normal text-[#000D32]">{serviceTitle}</h3>
+            </div>
+            <TechnicianStatusBadge status={visualStatus} />
+          </div>
+          <p className="mt-5 flex items-start gap-4 text-[22px] font-medium leading-7 text-[#64748B]">
+            <MapPin className="mt-0.5 size-6 shrink-0 text-[#757680]" strokeWidth={2.2} aria-hidden="true" />
+            <span className="line-clamp-1">{job.address}</span>
+          </p>
+          <p className="mt-6 flex items-start gap-4 border-t border-[#E0E3E5] pt-5 text-[22px] font-medium leading-7 text-[#64748B]">
+            <CalendarClock className="mt-0.5 size-6 shrink-0 text-[#757680]" strokeWidth={2.2} aria-hidden="true" />
+            <span>{job.status === 'completed' ? `Finished: ${formatOrderSchedule(job.preferred_date, job.preferred_time)}` : `Scheduled: ${formatOrderSchedule(job.preferred_date, job.preferred_time)}`}</span>
+          </p>
+        </Link>
+      </TechnicianCard>
+    );
+  }
+
   return (
     <TechnicianCard accent={status.accent} className="p-0">
-      <div className="p-6 pl-8">
+      <div className={compact ? 'p-6 pl-8' : 'p-8 pl-9'}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="text-sm font-extrabold uppercase tracking-[0.14em] text-[#64748B]">{job.order_id}</p>
-            <h3 className="mt-2 line-clamp-2 text-[28px] font-black leading-8 tracking-normal text-[#000D32]">{serviceTitle}</h3>
+            <h3 className="line-clamp-2 text-[28px] font-extrabold leading-8 tracking-normal text-[#000D32]">{serviceTitle}</h3>
+            <p className="mt-2 text-[20px] font-medium tracking-[0.04em] text-[#45464F]">{shortOrderId(job.order_id)}</p>
           </div>
           <TechnicianStatusBadge status={visualStatus} />
         </div>
 
-        <div className="mt-5 grid gap-3 border-b border-slate-200 pb-5 text-[16px] font-medium leading-6 text-[#64748B]">
-          <p className="flex items-start gap-3">
-            <CalendarClock className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
-            <span>{compact ? formatDateShort(job.preferred_date) : `${job.preferred_time}, ${formatDateShort(job.preferred_date)}`}</span>
+        <div className="mt-8 grid gap-3 border-b border-[#E0E3E5] pb-8 text-[21px] font-medium leading-7 text-[#64748B]">
+          <p className="flex items-start gap-5">
+            <CalendarClock className="mt-0.5 size-6 shrink-0 text-[#757680]" strokeWidth={2.2} aria-hidden="true" />
+            <span>{formatOrderSchedule(job.preferred_date, job.preferred_time)}</span>
           </p>
-          <p className="flex items-start gap-3">
-            <MapPin className="mt-0.5 size-5 shrink-0" aria-hidden="true" />
+          <p className="flex items-start gap-5">
+            <MapPin className="mt-0.5 size-6 shrink-0 text-[#757680]" strokeWidth={2.2} aria-hidden="true" />
             <span className="line-clamp-2">{job.address}</span>
           </p>
-          <p className="flex items-center gap-3">
-            <UserRound className="size-5 shrink-0" aria-hidden="true" />
+          <p className="flex items-center gap-5">
+            <UserRound className="size-6 shrink-0 text-[#757680]" strokeWidth={2.2} aria-hidden="true" />
             <span>{job.customer_name}</span>
           </p>
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-4">
-          <p className="text-[26px] font-black tracking-normal text-[#000D32]">{formatTaka(job.final_price)}</p>
+        <div className="mt-8 flex items-center justify-between gap-4">
+          <p className="text-[30px] font-extrabold tracking-normal text-[#000D32]">{formatTaka(job.final_price)}</p>
           <Link
             href={href}
-            className={`inline-flex min-h-14 min-w-[150px] items-center justify-center rounded-xl px-5 text-base font-black tracking-normal transition ${
+            className={`inline-flex min-h-[62px] min-w-[150px] items-center justify-center rounded-[10px] px-6 text-[18px] font-extrabold tracking-normal transition ${
               job.status === 'completed' ? 'bg-[#50D9FE] text-[#00677D] hover:bg-[#4CD6FB]' : 'bg-[#000D32] text-white hover:bg-[#12234D]'
             }`}
           >
@@ -51,4 +75,14 @@ export function TechnicianJobCard({ job, compact = false }: { job: BookingRow; c
       </div>
     </TechnicianCard>
   );
+}
+
+function shortOrderId(orderId: string) {
+  return orderId.replace(/^LSC-/, 'UQ-').slice(0, 8);
+}
+
+function formatOrderSchedule(dateValue: string, timeValue: string) {
+  const date = new Intl.DateTimeFormat('en', { day: '2-digit', month: 'short' }).format(new Date(dateValue));
+  const normalizedTime = timeValue.includes('(') ? timeValue.split('(')[0].trim() : timeValue;
+  return `${normalizedTime}, ${date}`;
 }

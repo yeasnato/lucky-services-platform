@@ -4,51 +4,51 @@ import { cn } from '@/lib/utils';
 const statusStyles: Record<string, { label: string; chip: string; accent: string }> = {
   assigned: {
     label: 'Pending',
-    chip: 'bg-amber-100 text-amber-700',
-    accent: 'bg-amber-500'
+    chip: 'bg-[#FFF3D8] text-[#B45309]',
+    accent: 'bg-[#F59E0B]'
   },
   accepted: {
     label: 'Accepted',
-    chip: 'bg-blue-100 text-blue-700',
-    accent: 'bg-blue-500'
+    chip: 'bg-[#DBEAFE] text-[#2563EB]',
+    accent: 'bg-[#3B82F6]'
   },
   on_the_way: {
     label: 'On The Way',
-    chip: 'bg-blue-100 text-blue-700',
-    accent: 'bg-blue-500'
+    chip: 'bg-[#DBEAFE] text-[#2563EB]',
+    accent: 'bg-[#3B82F6]'
   },
   in_progress: {
     label: 'Ongoing',
-    chip: 'bg-blue-100 text-blue-700',
-    accent: 'bg-blue-500'
+    chip: 'bg-[#DBEAFE] text-[#2563EB]',
+    accent: 'bg-[#3B82F6]'
   },
   completed: {
     label: 'Completed',
-    chip: 'bg-emerald-100 text-emerald-700',
-    accent: 'bg-emerald-500'
+    chip: 'bg-[#D1FAE5] text-[#059669]',
+    accent: 'bg-[#10B981]'
   },
   cancelled: {
     label: 'Cancelled',
-    chip: 'bg-red-100 text-red-700',
-    accent: 'bg-red-500'
+    chip: 'bg-[#FEE2E2] text-[#DC2626]',
+    accent: 'bg-[#EF4444]'
   },
   delayed: {
     label: 'Delayed',
-    chip: 'bg-amber-100 text-amber-700',
-    accent: 'bg-amber-500'
+    chip: 'bg-[#FFF3D8] text-[#D97706]',
+    accent: 'bg-[#F59E0B]'
   },
   issue: {
     label: 'Issue',
-    chip: 'bg-red-100 text-red-700',
-    accent: 'bg-red-500'
+    chip: 'bg-[#FEE2E2] text-[#DC2626]',
+    accent: 'bg-[#EF4444]'
   }
 };
 
 export function getTechnicianStatusStyle(status: string) {
   return statusStyles[status] || {
     label: titleCase(status.replaceAll('_', ' ')),
-    chip: 'bg-slate-100 text-slate-600',
-    accent: 'bg-slate-300'
+    chip: 'bg-[#F2F4F6] text-[#45464F]',
+    accent: 'bg-[#C5C6D0]'
   };
 }
 
@@ -56,7 +56,7 @@ export function TechnicianStatusBadge({ status, label }: { status: string; label
   const style = getTechnicianStatusStyle(status);
 
   return (
-    <span className={cn('inline-flex min-h-8 items-center rounded-full px-4 text-xs font-extrabold uppercase tracking-[0.16em]', style.chip)}>
+    <span className={cn('inline-flex min-h-[38px] items-center rounded-full px-4 text-[13px] font-extrabold uppercase tracking-[0.14em]', style.chip)}>
       {label || style.label}
     </span>
   );
@@ -72,8 +72,8 @@ export function TechnicianCard({
   accent?: string;
 }) {
   return (
-    <section className={cn('relative overflow-hidden rounded-[20px] border border-slate-200/70 bg-white shadow-[0_8px_24px_rgba(18,35,77,0.05)]', className)}>
-      {accent ? <span className={cn('absolute inset-y-0 left-0 w-1.5', accent)} aria-hidden="true" /> : null}
+    <section className={cn('relative overflow-hidden rounded-[16px] border border-[#E0E3E5] bg-white shadow-[0_4px_12px_rgba(18,35,77,0.05)]', className)}>
+      {accent ? <span className={cn('absolute inset-y-0 left-0 w-1', accent)} aria-hidden="true" /> : null}
       {children}
     </section>
   );
@@ -88,7 +88,7 @@ export function TechnicianSectionTitle({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <h2 className="text-[28px] font-black leading-9 tracking-normal text-[#000D32]">{title}</h2>
+      <h2 className="text-[28px] font-extrabold leading-9 tracking-normal text-[#000D32]">{title}</h2>
       {action}
     </div>
   );
@@ -96,7 +96,7 @@ export function TechnicianSectionTitle({
 
 export function formatTaka(value?: number | null) {
   if (!value) return '৳0';
-  return `৳${value.toLocaleString('en')}`;
+  return `৳ ${value.toLocaleString('en')}`;
 }
 
 export function formatDateShort(value: string) {
